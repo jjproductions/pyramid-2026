@@ -27,7 +27,7 @@ export const subscribeToRoom = (roomId, callback) => {
     // Local storage mock for testing across tabs
     const checkState = () => {
       const state = localStorage.getItem(`room_${roomId}`);
-      if (state) callback(JSON.parse(state));
+      callback(state ? JSON.parse(state) : null);
     };
     checkState();
     window.addEventListener('storage', checkState);

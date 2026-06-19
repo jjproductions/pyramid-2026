@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { subscribeToRoom, updateRoomState } from '../firebase';
+import { playDing, playBuzz, playSwoosh, playClick, playWin } from '../utils/sounds';
 
 export default function PlayerScreen() {
   const { roomId } = useParams();
@@ -9,15 +10,18 @@ export default function PlayerScreen() {
   const [joined, setJoined] = useState(false);
   const [gameState, setGameState] = useState(null);
   const [playerId, setPlayerId] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (roomId && joined) {
+    if (roomId) {
+      setLoading(true);
       const unsubscribe = subscribeToRoom(roomId, (state) => {
-        if (state) setGameState(state);
+        setGameState(state);
+        setLoading(false);
       });
       return () => unsubscribe();
     }
-  }, [roomId, joined]);
+  }, [roomId]);
 
   const handleJoin = async (e) => {
     e.preventDefault();
@@ -26,8 +30,7 @@ export default function PlayerScreen() {
     const uuid = 'user_' + Math.random().toString(36).substr(2, 9);
     setPlayerId(uuid);
     
-    const currentState = JSON.parse(localStorage.getItem(`room_${roomId}`) || '{}');
-    const playerCount = Object.keys(currentState.players || {}).length;
+    const playerCount = gameState ? Object.keys(gameState.players || {}).length : 0;
     const team = (playerCount % 2) + 1;
     const role = 'giver';
     
@@ -36,6 +39,22 @@ export default function PlayerScreen() {
   };
 
   if (!roomId) return <div className="loading">No Room ID</div>;
+  if (loading) return <div className="loading">Connecting...</div>;
+  
+  if (!gameState) {
+    return (
+      <div className="player-join-screen fade-in" style={{ textAlign: 'center' }}>
+        <h2>Room Not Found</h2>
+        <p style={{ margin: '1.5rem 0', color: 'var(--text-muted)', fontSize: '1.2rem' }}>
+          We couldn't find a lobby with code <strong>{roomId}</strong>.
+        </p>
+        <a href="/" className="btn btn-secondary">
+          Back to Home
+        </a>
+      </div>
+    );
+  }
+
   if (!joined) {
     return (
       <div className="player-join-screen fade-in">
@@ -43,16 +62,21 @@ export default function PlayerScreen() {
         <form onSubmit={handleJoin} className="join-form">
           <input type="text" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} className="input-code" required />
           <input type="text" placeholder="Hobby / Inside Joke" value={interest} onChange={(e) => setInterest(e.target.value)} className="input-code" style={{ marginTop: '1rem' }} />
-          <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }}>Join</button>
+          <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+            Join
+          </button>
         </form>
       </div>
     );
   }
-  if (!gameState) return <div className="loading">Connecting...</div>;
 
   const myPlayer = gameState.players?.[playerId];
   const isMyTurn = gameState.currentTurn?.team === myPlayer?.team;
   const isGiver = myPlayer?.role === 'giver';
+
+  const passLimit = gameState.settings?.passLimit || 'unlimited';
+  const passesUsed = gameState.passesUsed || 0;
+  const isPassDisabled = passLimit !== 'unlimited' && passesUsed >= parseInt(passLimit);
 
   const selectCategory = (index) => {
     const numWords = gameState.board[index].words.length;
@@ -62,8 +86,9 @@ export default function PlayerScreen() {
       activeWordIndex: 0,
       wordStates: new Array(numWords).fill(false),
       timerActive: false,
-      timer: 30,
-      wordsScored: 0
+      timer: gameState.settings?.timerDuration || 30,
+      wordsScored: 0,
+      passesUsed: 0
     });
   };
 
@@ -79,6 +104,10 @@ export default function PlayerScreen() {
     const nextWordScored = gameState.wordsScored + 1;
     const numWords = gameState.board[gameState.activeCategoryIndex].words.length;
     
+    if (gameState.settings?.soundEnabled) {
+      playDing();
+    }
+
     let updates = {
       [`teams/${myPlayer.team}/score`]: nextScore,
       wordsScored: nextWordScored,
@@ -103,13 +132,23 @@ export default function PlayerScreen() {
   };
 
   const markPass = () => {
+    if (isPassDisabled) return;
+
     const numWords = gameState.board[gameState.activeCategoryIndex].words.length;
     let nextIdx = (gameState.activeWordIndex + 1) % numWords;
     while(gameState.wordStates && gameState.wordStates[nextIdx] === true) {
        nextIdx = (nextIdx + 1) % numWords;
     }
+    
+    const nextPasses = (gameState.passesUsed || 0) + 1;
+
+    if (gameState.settings?.soundEnabled) {
+      playSwoosh();
+    }
+
     updateRoomState(roomId, { 
-      activeWordIndex: nextIdx
+      activeWordIndex: nextIdx,
+      passesUsed: nextPasses
     });
   };
 
@@ -117,9 +156,16 @@ export default function PlayerScreen() {
     const nextBoard = [...gameState.circleBoard];
     nextBoard[gameState.activeCircleIndex].completed = true;
 
+    if (gameState.settings?.soundEnabled) {
+      playDing();
+    }
+
     const allCompleted = nextBoard.every(b => b.completed);
 
     if (allCompleted) {
+      if (gameState.settings?.soundEnabled) {
+        playWin();
+      }
       updateRoomState(roomId, {
         circleBoard: nextBoard,
         circleTimerActive: false,
@@ -143,6 +189,11 @@ export default function PlayerScreen() {
     while(nextBoard[nextIdx].completed) {
        nextIdx = (nextIdx + 1) % 6;
     }
+
+    if (gameState.settings?.soundEnabled) {
+      playSwoosh();
+    }
+
     updateRoomState(roomId, { 
       activeCircleIndex: nextIdx
     });
@@ -174,7 +225,14 @@ export default function PlayerScreen() {
         </div>
       )}
 
-      {gameState.status === 'round1' && isMyTurn && isGiver && gameState.activeCategoryIndex === null && (
+      {gameState.status === 'round1' && isMyTurn && !isGiver && (
+        <div className="waiting-view">
+          <h2>It's Your Turn to Guess!</h2>
+          <p style={{ marginTop: '1rem', color: 'var(--secondary)', fontSize: '1.25rem', fontWeight: 'bold' }}>Listen to your teammate's clues.</p>
+        </div>
+      )}
+
+      {gameState.status === 'round1' && isMyTurn && isGiver && gameState.activeCategoryIndex == null && (
         <div className="category-selection">
           <h2>Select a Category</h2>
           <div className="category-list">
@@ -189,12 +247,12 @@ export default function PlayerScreen() {
         </div>
       )}
 
-      {gameState.status === 'round1' && isMyTurn && isGiver && gameState.activeCategoryIndex !== null && (
+      {gameState.status === 'round1' && isMyTurn && isGiver && gameState.activeCategoryIndex != null && (
         <div className="word-view">
           {!gameState.categoryRevealed ? (
-            <div style={{ textAlign: 'center' }}>
-              <h2 style={{ color: '#a0a0a0' }}>{gameState.board[gameState.activeCategoryIndex].name}</h2>
-              <h3 style={{ marginTop: '1rem', marginBottom: '2rem' }}>{gameState.board[gameState.activeCategoryIndex].description}</h3>
+            <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
+              <h2 style={{ color: '#a0a0a0', margin: 0 }}>{gameState.board[gameState.activeCategoryIndex].name}</h2>
+              <h3 style={{ margin: 0, lineHeight: 1.5 }}>{gameState.board[gameState.activeCategoryIndex].description}</h3>
               <button className="btn btn-primary" onClick={startCategory}>GO!</button>
             </div>
           ) : (
@@ -204,7 +262,13 @@ export default function PlayerScreen() {
               </h1>
               <div className="action-buttons">
                 <button className="btn btn-success action-btn" onClick={markCorrect}>CORRECT</button>
-                <button className="btn btn-danger action-btn" onClick={markPass}>PASS</button>
+                <button 
+                  className="btn btn-danger action-btn" 
+                  onClick={markPass}
+                  disabled={isPassDisabled}
+                >
+                  {passLimit === 'unlimited' ? 'PASS' : `PASS (${passesUsed}/${passLimit})`}
+                </button>
               </div>
             </>
           )}
@@ -222,6 +286,14 @@ export default function PlayerScreen() {
         <div className="waiting-view">
           <h2>Team {gameState.currentTurn.team} is in the Winner's Circle!</h2>
           <p>Watch the TV!</p>
+        </div>
+      )}
+
+      {gameState.status === 'winners_circle' && isMyTurn && !isGiver && (
+        <div className="waiting-view">
+          <h2>Winner's Circle</h2>
+          <h3>It's Your Turn to Guess!</h3>
+          <p style={{ marginTop: '1rem', color: 'var(--secondary)', fontSize: '1.25rem', fontWeight: 'bold' }}>Listen to your teammate's clues.</p>
         </div>
       )}
 

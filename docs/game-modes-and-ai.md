@@ -6,7 +6,7 @@ This document outlines the game modes available in the **$25,000 Pyramid Game** 
 
 ## 1. Classic Mode
 
-In **Classic Mode**, the game reads pre-defined game configurations from a local static file: [src/content.json](file:///Users/jj/code/AI/pyramid-2026/src/content.json).
+In **Classic Mode**, the game reads pre-defined game configurations from a local static file: [data/content.json](file:///Users/jj/code/AI/pyramid-2026/data/content.json).
 
 ### Setup and Selection Logic
 1. **Selecting a Round**: When the host starts the game, the server randomly picks one round object from the array in `content.json`.
