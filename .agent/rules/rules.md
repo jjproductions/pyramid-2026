@@ -2,6 +2,10 @@
 
 This file defines project-specific guidelines and automated workflows for the Antigravity IDE agent when working in this repository.
 
+## Planning Workflows
+
+- Do not automatically implement changes when an implementation plan is created. Always wait for the user to explicitly approve the plan before executing it.
+
 ## Automated Git Workflows
 
 ### git-bump

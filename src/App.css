@@ -159,7 +159,8 @@ h1.title {
 
 /* Host Screen */
 .room-code-display {
-  font-size: 6rem;
+  font-size: clamp(3rem, 10vw, 6rem);
+  line-height: 1.2;
   letter-spacing: 0.3em;
   margin: 1rem 0;
   color: var(--secondary);

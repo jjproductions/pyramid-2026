@@ -86,6 +86,7 @@ export default function HostScreen() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState('game');
   const [localSettings, setLocalSettings] = useState(DEFAULT_SETTINGS);
+  const [initialGivers, setInitialGivers] = useState({ 1: null, 2: null });
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -177,13 +178,24 @@ export default function HostScreen() {
     const team1Order = allPlayers.filter(([,p]) => p.team === 1).map(([id]) => id);
     const team2Order = allPlayers.filter(([,p]) => p.team === 2).map(([id]) => id);
 
-    const giverId   = team1Order[0] || null;
-    const guesserId = team2Order[0] || null;
+    const t1Selected = initialGivers[1] || team1Order[1] || team1Order[0];
+    const t2Selected = initialGivers[2] || team2Order[1] || team2Order[0];
+
+    const t1GiverIdx = team1Order.indexOf(t1Selected);
+    const t2GiverIdx = team2Order.indexOf(t2Selected);
+
+    const t1GuesserIdx = team1Order.length > 1 ? (t1GiverIdx - 1 + team1Order.length) % team1Order.length : 0;
+    const t2GuesserIdx = team2Order.length > 1 ? (t2GiverIdx - 1 + team2Order.length) % team2Order.length : 0;
+
+    const giverId   = team1Order[t1GiverIdx] || null;
+    const guesserId = team1Order[t1GuesserIdx] || null;
 
     const rotationUpdates = {
-      'teams/1/giverIndex':  0,
+      'teams/1/giverIndex':  t1GiverIdx !== -1 ? t1GiverIdx : 0,
+      'teams/1/guesserIndex': t1GuesserIdx,
       'teams/1/playerOrder': team1Order,
-      'teams/2/giverIndex':  0,
+      'teams/2/giverIndex':  t2GiverIdx !== -1 ? t2GiverIdx : 0,
+      'teams/2/guesserIndex': t2GuesserIdx,
       'teams/2/playerOrder': team2Order,
       currentTurn: { team: 1, giverId, guesserId },
     };
@@ -228,20 +240,29 @@ export default function HostScreen() {
   // Helper: compute next giverId / guesserId after a turn ends
   const computeNextTurn = (nextTeam) => {
     const teams = gameState.teams;
-    // The team that just played advances their giver index
+    // The team that just played advances their indices
     const justPlayedTeam = gameState.currentTurn.team;
-    const currentIdx = teams[justPlayedTeam]?.giverIndex || 0;
     const order = teams[justPlayedTeam]?.playerOrder || [];
-    const nextIdx = order.length > 0 ? (currentIdx + 1) % order.length : 0;
+    const numPlayers = order.length;
+    
+    let nextGiverIdx = teams[justPlayedTeam]?.giverIndex || 0;
+    let nextGuesserIdx = teams[justPlayedTeam]?.guesserIndex || 0;
+
+    if (numPlayers > 0) {
+      nextGiverIdx = (nextGiverIdx + 1) % numPlayers;
+      nextGuesserIdx = (nextGuesserIdx + 1) % numPlayers;
+    }
 
     const nextTeamOrder = teams[nextTeam]?.playerOrder || [];
-    const nextTeamIdx   = teams[nextTeam]?.giverIndex || 0;
+    const nextTeamGiverIdx = teams[nextTeam]?.giverIndex || 0;
+    const nextTeamGuesserIdx = teams[nextTeam]?.guesserIndex || 0;
 
-    const giverId   = nextTeamOrder[nextTeamIdx]  || null;
-    const guesserId = order[nextIdx] || null; // opposing team's newly-advanced player
+    const giverId   = nextTeamOrder[nextTeamGiverIdx]  || null;
+    const guesserId = nextTeamOrder[nextTeamGuesserIdx] || null;
 
     return {
-      [`teams/${justPlayedTeam}/giverIndex`]: nextIdx,
+      [`teams/${justPlayedTeam}/giverIndex`]: nextGiverIdx,
+      [`teams/${justPlayedTeam}/guesserIndex`]: nextGuesserIdx,
       currentTurn: { team: nextTeam, giverId, guesserId },
     };
   };
@@ -262,14 +283,13 @@ export default function HostScreen() {
   };
 
   const startNewRound = () => {
-    // Preserve giverIndex rotation across rounds; reset board and start with team 1
+    // Preserve indices rotation across rounds; reset board and start with team 1
     const teams = gameState.teams;
     const t1Order = teams[1]?.playerOrder || [];
-    const t2Order = teams[2]?.playerOrder || [];
-    const t1Idx   = teams[1]?.giverIndex || 0;
-    const t2Idx   = teams[2]?.giverIndex || 0;
-    const giverId   = t1Order[t1Idx] || null;
-    const guesserId = t2Order[t2Idx] || null;
+    const t1GiverIdx   = teams[1]?.giverIndex || 0;
+    const t1GuesserIdx = teams[1]?.guesserIndex || 0;
+    const giverId   = t1Order[t1GiverIdx] || null;
+    const guesserId = t1Order[t1GuesserIdx] || null;
     updateRoomState(roomId, {
       board: getRandomCategories(gameState.settings),
       currentTurn: { team: 1, giverId, guesserId },
@@ -475,12 +495,27 @@ export default function HostScreen() {
                   <div className="lobby-team-header">Team {teamNum} ({teamPlayers.length})</div>
                   {teamPlayers.length === 0 
                     ? <div className="lobby-team-empty">Waiting...</div>
-                    : teamPlayers.map((p, i) => (
-                        <div key={i} className={`player-badge team-${teamNum}`}>
-                          <span className="player-order">#{i + 1}</span>
-                          {p.name}{p.interest ? ` (${p.interest})` : ''}
-                        </div>
-                      ))
+                    : teamPlayers.map((p, i) => {
+                        const id = Object.keys(gameState.players).find(k => gameState.players[k] === p);
+                        const isGiver = initialGivers[teamNum] === id || (!initialGivers[teamNum] && i === 1) || (teamPlayers.length === 1 && i === 0);
+                        return (
+                          <div key={i} className={`player-badge team-${teamNum}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', boxSizing: 'border-box' }}>
+                            <div style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <span className="player-order">#{i + 1}</span>
+                              {p.name}{p.interest ? ` (${p.interest})` : ''}
+                            </div>
+                            <label title="Set as 1st Giver" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                              <input 
+                                type="radio" 
+                                name={`team-${teamNum}-giver`}
+                                checked={isGiver}
+                                onChange={() => setInitialGivers(prev => ({ ...prev, [teamNum]: id }))}
+                                style={{ transform: 'scale(1.5)', cursor: 'pointer', margin: 0, accentColor: 'var(--primary)' }}
+                              />
+                            </label>
+                          </div>
+                        );
+                      })
                   }
                 </div>
               );
