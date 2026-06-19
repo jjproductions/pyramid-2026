@@ -82,7 +82,6 @@ const getRandomCircle = (settings = DEFAULT_SETTINGS) => {
 export default function HostScreen() {
   const [roomId, setRoomId] = useState('');
   const [gameState, setGameState] = useState(null);
-  const [gameMode, setGameMode] = useState('classic');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState('game');
   const [localSettings, setLocalSettings] = useState(DEFAULT_SETTINGS);
@@ -171,7 +170,7 @@ export default function HostScreen() {
   const players = Object.values(gameState.players || {});
 
   const startGame = async () => {
-    const finalMode = gameState.settings?.gameMode || gameMode;
+    const finalMode = gameState.settings?.gameMode || 'classic';
 
     // Build ordered player lists per team for rotation
     const allPlayers = Object.entries(gameState.players || {});
@@ -187,8 +186,13 @@ export default function HostScreen() {
     const t1GuesserIdx = team1Order.length > 1 ? (t1GiverIdx - 1 + team1Order.length) % team1Order.length : 0;
     const t2GuesserIdx = team2Order.length > 1 ? (t2GiverIdx - 1 + team2Order.length) % team2Order.length : 0;
 
-    const giverId   = team1Order[t1GiverIdx] || null;
-    const guesserId = team1Order[t1GuesserIdx] || null;
+    const startingTeam = gameState.nextStartingTeam || 1;
+    const activeOrder = startingTeam === 1 ? team1Order : team2Order;
+    const activeGiverIdx = startingTeam === 1 ? t1GiverIdx : t2GiverIdx;
+    const activeGuesserIdx = startingTeam === 1 ? t1GuesserIdx : t2GuesserIdx;
+
+    const giverId   = activeOrder[activeGiverIdx] || null;
+    const guesserId = activeOrder[activeGuesserIdx] || null;
 
     const rotationUpdates = {
       'teams/1/giverIndex':  t1GiverIdx !== -1 ? t1GiverIdx : 0,
@@ -197,7 +201,8 @@ export default function HostScreen() {
       'teams/2/giverIndex':  t2GiverIdx !== -1 ? t2GiverIdx : 0,
       'teams/2/guesserIndex': t2GuesserIdx,
       'teams/2/playerOrder': team2Order,
-      currentTurn: { team: 1, giverId, guesserId },
+      currentTurn: { team: startingTeam, giverId, guesserId },
+      nextStartingTeam: startingTeam === 1 ? 2 : 1
     };
 
     if (finalMode === 'classic') {
@@ -283,16 +288,21 @@ export default function HostScreen() {
   };
 
   const startNewRound = () => {
-    // Preserve indices rotation across rounds; reset board and start with team 1
+    // Preserve indices rotation across rounds; reset board and alternate starting team
     const teams = gameState.teams;
-    const t1Order = teams[1]?.playerOrder || [];
-    const t1GiverIdx   = teams[1]?.giverIndex || 0;
-    const t1GuesserIdx = teams[1]?.guesserIndex || 0;
-    const giverId   = t1Order[t1GiverIdx] || null;
-    const guesserId = t1Order[t1GuesserIdx] || null;
+    const startingTeam = gameState.nextStartingTeam || 1;
+    
+    const activeOrder = teams[startingTeam]?.playerOrder || [];
+    const activeGiverIdx   = teams[startingTeam]?.giverIndex || 0;
+    const activeGuesserIdx = teams[startingTeam]?.guesserIndex || 0;
+    
+    const giverId   = activeOrder[activeGiverIdx] || null;
+    const guesserId = activeOrder[activeGuesserIdx] || null;
+    
     updateRoomState(roomId, {
       board: getRandomCategories(gameState.settings),
-      currentTurn: { team: 1, giverId, guesserId },
+      currentTurn: { team: startingTeam, giverId, guesserId },
+      nextStartingTeam: startingTeam === 1 ? 2 : 1,
       activeCategoryIndex: null,
       categoryRevealed: false,
       activeWordIndex: 0,
@@ -308,9 +318,12 @@ export default function HostScreen() {
     if (gameState.teams[2].score > gameState.teams[1].score) {
       winningTeam = 2;
     }
+    const nonParticipatingTeam = winningTeam === 1 ? 2 : 1;
+    
     updateRoomState(roomId, {
       status: 'winners_circle_selecting',
       currentTurn: { team: winningTeam, giverId: null, guesserId: null },
+      nextStartingTeam: nonParticipatingTeam,
       'teams/1/score': 0,
       'teams/2/score': 0
     });
@@ -522,12 +535,10 @@ export default function HostScreen() {
             })}
           </div>
 
-          <div className="game-mode-selector" style={{ margin: '2rem 0' }}>
-            <h3>Select Game Mode:</h3>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1rem' }}>
-              <button className={`btn ${gameMode === 'classic' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setGameMode('classic')}>Classic (Built-in)</button>
-              <button className={`btn ${gameMode === 'ai' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setGameMode('ai')}>AI Personalized</button>
-            </div>
+          <div className="game-mode-display" style={{ margin: '2rem 0', fontSize: '1.2rem', color: 'var(--text-muted)' }}>
+            Current Mode: <strong style={{ color: 'var(--primary)' }}>
+              {gameState.settings?.gameMode === 'ai' ? 'AI Personalized' : 'Classic (Built-in)'}
+            </strong>
           </div>
 
           {(players.filter(p => p.team === 1).length >= 2 && players.filter(p => p.team === 2).length >= 2) ? (
