@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { subscribeToRoom, updateRoomState } from '../firebase';
 import { playDing, playBuzz, playSwoosh, playClick, playWin } from '../utils/sounds';
+
+const SESSION_KEY = (roomId) => `pyramid_session_${roomId}`;
 
 export default function PlayerScreen() {
   const { roomId } = useParams();
@@ -11,16 +13,39 @@ export default function PlayerScreen() {
   const [gameState, setGameState] = useState(null);
   const [playerId, setPlayerId] = useState('');
   const [loading, setLoading] = useState(true);
+  const sessionRestored = useRef(false);
 
   useEffect(() => {
-    if (roomId) {
-      setLoading(true);
-      const unsubscribe = subscribeToRoom(roomId, (state) => {
-        setGameState(state);
-        setLoading(false);
-      });
-      return () => unsubscribe();
-    }
+    if (!roomId) return;
+    setLoading(true);
+    const unsubscribe = subscribeToRoom(roomId, (state) => {
+      setGameState(state);
+      setLoading(false);
+
+      // Try to restore session from localStorage on first load
+      if (!sessionRestored.current && state) {
+        sessionRestored.current = true;
+        const saved = localStorage.getItem(SESSION_KEY(roomId));
+        if (saved) {
+          try {
+            const { playerId: savedId, name: savedName, interest: savedInterest } = JSON.parse(saved);
+            // Only restore if the player still exists in the room
+            if (state.players && state.players[savedId]) {
+              setPlayerId(savedId);
+              setName(savedName);
+              setInterest(savedInterest || '');
+              setJoined(true);
+            } else {
+              // Player was removed (e.g. room reset) — clear stale session
+              localStorage.removeItem(SESSION_KEY(roomId));
+            }
+          } catch {
+            localStorage.removeItem(SESSION_KEY(roomId));
+          }
+        }
+      }
+    });
+    return () => unsubscribe();
   }, [roomId]);
 
   const handleJoin = async (e) => {
@@ -35,6 +60,9 @@ export default function PlayerScreen() {
     const role = 'giver';
     
     await updateRoomState(roomId, { [`players/${uuid}`]: { name, interest, team, role } });
+
+    // Persist session so refreshes don't re-create the player
+    localStorage.setItem(SESSION_KEY(roomId), JSON.stringify({ playerId: uuid, name, interest }));
     setJoined(true);
   };
 
@@ -228,7 +256,7 @@ export default function PlayerScreen() {
       {gameState.status === 'round1' && isMyTurn && !isGiver && (
         <div className="waiting-view">
           <h2>It's Your Turn to Guess!</h2>
-          <p style={{ marginTop: '1rem', color: 'var(--secondary)', fontSize: '1.25rem', fontWeight: 'bold' }}>Listen to your teammate's clues.</p>
+          <p style={{ color: 'var(--secondary)', fontWeight: 'bold' }}>Listen to your teammate's clues.</p>
         </div>
       )}
 
@@ -298,16 +326,16 @@ export default function PlayerScreen() {
       )}
 
       {gameState.status === 'winners_circle' && isMyTurn && isGiver && (
-        <div className="winners-circle-view" style={{ textAlign: 'center' }}>
-          <h2 style={{ color: '#FFB800', marginBottom: '1rem' }}>Winner's Circle</h2>
+        <div className="winners-circle-view">
+          <h2 style={{ color: '#FFB800', margin: 0 }}>Winner's Circle</h2>
           {!gameState.circleRevealed ? (
-            <div style={{ marginTop: '2rem' }}>
-              <h3>Ready to start the clock?</h3>
+            <>
+              <h3 style={{ margin: 0 }}>Ready to start the clock?</h3>
               <button className="btn btn-primary" onClick={() => updateRoomState(roomId, { circleRevealed: true, circleTimerActive: true })}>GO!</button>
-            </div>
+            </>
           ) : (
             <div className="word-view">
-              <h2 style={{ fontSize: '3rem', color: '#fff', marginBottom: '2rem' }}>
+              <h2 style={{ margin: 0, lineHeight: 1.2, color: '#fff', fontSize: 'clamp(1.5rem, 6vw, 3rem)' }}>
                  {gameState.circleBoard[gameState.activeCircleIndex].phrase}
               </h2>
               <div className="action-buttons">

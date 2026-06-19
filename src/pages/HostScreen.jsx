@@ -462,7 +462,7 @@ export default function HostScreen() {
               <h2 style={{ marginBottom: '1rem', color: '#00E5FF' }}>Round Complete!</h2>
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                 <button className="btn btn-secondary" onClick={startNewRound}>Start Next Round</button>
-                {(gameState.teams?.[1]?.score > 0 || gameState.teams?.[2]?.score > 0) && (
+                {(gameState.teams?.[1]?.score !== gameState.teams?.[2]?.score) && (
                   <button className="btn btn-primary" onClick={startWinnersCircle}>Go to Winner's Circle</button>
                 )}
               </div>
