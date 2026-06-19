@@ -1,0 +1,1886 @@
+[
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Shirt",
+              "Cold",
+              "Ring",
+              "Attitude",
+              "Life",
+              "Pat on the Back"
+            ],
+            "_name": "I Gave you the Skinniest Years of My Life.",
+            "_description": "Things that we give to others"
+          },
+          {
+            "Word": [
+              "Robin",
+              "Crime",
+              "Cave",
+              "Penguin",
+              "Gotham",
+              "Joker"
+            ],
+            "_name": "Queer Eye to Batman: Lose the Tights",
+            "_description": "Things associated with Batman"
+          },
+          {
+            "Word": [
+              "Years",
+              "Colorado",
+              "Gift",
+              "Postage",
+              "Oh!",
+              "Advertisements"
+            ],
+            "_name": "Cancel My Subscription. I Don't Need Your Issues.",
+            "_description": "Words associated with a Magazine Subscription"
+          },
+          {
+            "Word": [
+              "Eyes",
+              "Mansion",
+              "Jewelry",
+              "Muscles",
+              "Wallet",
+              "Confidence"
+            ],
+            "_name": "If Size doesn't matter, why am I Single",
+            "_description": "Things that are more likely to attract a mate if they are big"
+          },
+          {
+            "Word": [
+              "Shake",
+              "Weak",
+              "Yellow",
+              "Scared",
+              "Quit",
+              "White Flag"
+            ],
+            "_name": "What do you call a Cowardly Chicken",
+            "_description": "Things associated with a coward"
+          },
+          {
+            "Word": [
+              "Pearl",
+              "Summer",
+              "Strawberry",
+              "Ash",
+              "Brown",
+              "Ruby"
+            ],
+            "_name": "Are you a natural Bleach Blonde",
+            "_description": "Colors you might see on a box of hair dye"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Circuses",
+          "What Pinocchio might say",
+          "Famous TV Dads",
+          "People on 'American Idol'",
+          "Things in the Atlantic Ocean",
+          "Things that Crash"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Library",
+              "University",
+              "Chat Room",
+              "Convention",
+              "NASA",
+              "Laboratory"
+            ],
+            "_name": "I Think your Pocket Protector is Hot.",
+            "_description": "Places you might find a nerd"
+          },
+          {
+            "Word": [
+              "Psychiatrist",
+              "Witness",
+              "Accountant",
+              "Dentist",
+              "Critic",
+              "Meteorologist"
+            ],
+            "_name": "I'm an Amateur Brain Surgeon",
+            "_description": "People who are suppose to be experts"
+          },
+          {
+            "Word": [
+              "Teeth",
+              "Razor",
+              "Wit",
+              "Saw",
+              "Arrow",
+              "Edge"
+            ],
+            "_name": "Her singing is like Cheddar Chesse.",
+            "_description": "Things that can be sharp"
+          },
+          {
+            "Word": [
+              "Titanic",
+              "Mohawks",
+              "Cigarettes",
+              "Polyester",
+              "Spam",
+              "Jerry Curl"
+            ],
+            "_name": "The Light Bulb over your head's a little dim",
+            "_description": "Not so great ideas from history"
+          },
+          {
+            "Word": [
+              "Skin",
+              "Road",
+              "Skull",
+              "Flight",
+              "Tongue",
+              "Camel"
+            ],
+            "_name": "Things that go Bump in the Night can be fun",
+            "_description": "Things that might have bumps"
+          },
+          {
+            "Word": [
+              "Green",
+              "Camping",
+              "Leader",
+              "Clover",
+              "Badges",
+              "Self-Esteem"
+            ],
+            "_name": "I Graduated from Brownies to Cookies",
+            "_description": "Things associated with Girls Scouts"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Parts of a Mouse",
+          "What a Lunchbox might say",
+          "Types of Crabs",
+          "Vaccines",
+          "Why you get off the Bus",
+          "Things that Decay"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Allowance",
+              "Tuition",
+              "Advice",
+              "Wheels",
+              "Credit Card",
+              "Permission"
+            ],
+            "_name": "First National Bank of Dad",
+            "_description": "Things kids get from their Dads"
+          },
+          {
+            "Word": [
+              "Invitation",
+              "Married",
+              "Message",
+              "Cards",
+              "Lucky",
+              "Surprise Party"
+            ],
+            "_name": "You still have no mail",
+            "_description": "Things lonely people might not get"
+          },
+          {
+            "Word": [
+              "Coffee",
+              "Soup",
+              "Beer",
+              "Cocoa",
+              "Hot Tea",
+              "Slushy"
+            ],
+            "_name": "I prefer to drink my wine with a bendy straw",
+            "_description": "Things you should not drink with a straw"
+          },
+          {
+            "Word": [
+              "Deejay",
+              "Professor",
+              "Gossip",
+              "Telemarketer",
+              "Speaker",
+              "Preacher"
+            ],
+            "_name": "If Talking was a Sport, You'd be MVP",
+            "_description": "People who can talk for hours on end"
+          },
+          {
+            "Word": [
+              "Notes",
+              "Scale",
+              "Sharp",
+              "Meter",
+              "Tempo",
+              "Chord"
+            ],
+            "_name": "I Majored and Minored in Music",
+            "_description": "Terms you learn in music school"
+          },
+          {
+            "Word": [
+              "Burn",
+              "Care",
+              "Smooth",
+              "Pale",
+              "Flaky",
+              "Ashy"
+            ],
+            "_name": "My Acne cleared up just in Time for Wrinkles",
+            "_description": "Words associated with skin"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Sounds Birds Make",
+          "Honda Car Models",
+          "Things you say when someone sneezes",
+          "Green Vegetables",
+          "Why you Mumble",
+          "Things that Dissolve"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Taxi",
+              "Bed",
+              "TV",
+              "Luggage",
+              "Toothbrush",
+              "Opinion"
+            ],
+            "_name": "My Dream is a Bathroom to Myself",
+            "_description": "Things you share that you might want for yourself"
+          },
+          {
+            "Word": [
+              "Hate",
+              "Fear",
+              "Joy",
+              "Grief",
+              "Rage",
+              "Guilt"
+            ],
+            "_name": "Can you feel the Love? Me neither.",
+            "_description": "Emotions besides Love"
+          },
+          {
+            "Word": [
+              "Smog",
+              "Cigar",
+              "Fumes",
+              "Trash",
+              "Waste",
+              "Volcano"
+            ],
+            "_name": "I'm having a bad Air Day",
+            "_description": "Things that can ruin the environment"
+          },
+          {
+            "Word": [
+              "White",
+              "Veil",
+              "Shower",
+              "Maid of Honor",
+              "Registry",
+              "Doves"
+            ],
+            "_name": "My Wedding Channel Gets Bad Reception",
+            "_description": "Things you might see on a channel devoted to weddings"
+          },
+          {
+            "Word": [
+              "Winner",
+              "Teams",
+              "Fight",
+              "Scab",
+              "Banjo",
+              "Door"
+            ],
+            "_name": "I'd Date you if I weren't so Picky",
+            "_description": "Things people pick"
+          },
+          {
+            "Word": [
+              "Hot",
+              "Yellow",
+              "Tan",
+              "Dawn",
+              "Helium",
+              "Eclipse"
+            ],
+            "_name": "Even Albinos Get their Day in the Sun",
+            "_description": "Things associated with the sun"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Vowels",
+          "People on Reality Shows",
+          "Things in a Phone Book",
+          "What an Astronaut Might Say",
+          "Brands of Frozen Pizza",
+          "Things with Chains"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Bill",
+              "Ticket",
+              "Cantaloupe",
+              "Seam",
+              "Atom",
+              "Couple",
+              "Berlin"
+            ],
+            "_name": "Gimme a Break",
+            "_description": "things that are split"
+          },
+          {
+            "Word": [
+              "Web",
+              "Legs",
+              "Basement",
+              "Bite",
+              "Fly",
+              "Poison",
+              "Tarantula"
+            ],
+            "_name": "The Creepy Crawler",
+            "_description": "things associated with a spider"
+          },
+          {
+            "Word": [
+              "Butter",
+              "Yellow",
+              "Cereal",
+              "Bob",
+              "Muffin",
+              "Stalk",
+              "Bourbon"
+            ],
+            "_name": "Know Your Niblets",
+            "_description": "things associated with corn"
+          },
+          {
+            "Word": [
+              "Read",
+              "Scratch",
+              "Nap",
+              "Clean",
+              "Sigh",
+              "Yawn",
+              "Crochet"
+            ],
+            "_name": "What is Next",
+            "_description": "things you do when you are bored"
+          },
+          {
+            "Word": [
+              "Bicycle",
+              "Elephant",
+              "Fence",
+              "Camel",
+              "Dock",
+              "Curb",
+              "Love Seat"
+            ],
+            "_name": "Bottoms Up",
+            "_description": "things you sit on"
+          },
+          {
+            "Word": [
+              "Groucho Marx",
+              "Fidel Castro",
+              "Shakespeare",
+              "Albert Einstein",
+              "Hulk Hogan",
+              "Charlie Chan",
+              "Hitler"
+            ],
+            "_name": "The Gang is all Hair",
+            "_description": "men with moustaches"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Things that are Dense",
+          "Things with a Tongue",
+          "Things that are Temporary",
+          "Things in Rome",
+          "What a cop says",
+          "Things on the Moon"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "The Devil",
+              "Osama Bin Ladden",
+              "Dracula",
+              "Mr. Hyde",
+              "Goliath",
+              "Captain Hook",
+              "The Godfather"
+            ],
+            "_name": "Rogues Gallery",
+            "_description": "Famous Bad Guys"
+          },
+          {
+            "Word": [
+              "An Oven",
+              "Doughnut",
+              "Rye",
+              "Meringue",
+              "Aroma",
+              "Loaf",
+              "Counter"
+            ],
+            "_name": "Flour Power",
+            "_description": "things in a bakery"
+          },
+          {
+            "Word": [
+              "Tennis",
+              "Duet",
+              "Argument",
+              "Chess",
+              "Conversation",
+              "Marriage",
+              "Contract"
+            ],
+            "_name": "On the Double",
+            "_description": "things that require 2 people"
+          },
+          {
+            "Word": [
+              "Guitar",
+              "Soprano",
+              "Composer",
+              "Grammy",
+              "Choir",
+              "Soul Train",
+              "Hymn"
+            ],
+            "_name": "Score It",
+            "_description": "things associated with music"
+          },
+          {
+            "Word": [
+              "University",
+              "Limousine",
+              "Barbara",
+              "The Senate",
+              "Guard",
+              "Pentagon",
+              "Cabinet"
+            ],
+            "_name": "Thanks for the Memorial",
+            "_description": "things in Washington, DC"
+          },
+          {
+            "Word": [
+              "Mustard",
+              "Frankfurter",
+              "Chili",
+              "Bun",
+              "Sauerkraut",
+              "Kosher",
+              "Vender"
+            ],
+            "_name": "Now they are made of Turkey",
+            "_description": "things associated with a hot dog"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Things that are Stroked",
+          "Things on a Shelf",
+          "People who type",
+          "Exercises",
+          "Words that Rhyme",
+          "What a Frisbee might say"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Honeymoon",
+              "Costume",
+              "Safari",
+              "Wardrobe",
+              "Campaigne",
+              "Meeting",
+              "Demonstration"
+            ],
+            "_name": "Plan of Attack",
+            "_description": "things that are planned"
+          },
+          {
+            "Word": [
+              "Cat",
+              "Cage",
+              "Lease",
+              "Trick",
+              "Vet",
+              "Shed",
+              "Muzzle"
+            ],
+            "_name": "Pet Love",
+            "_description": "things associated with a pet"
+          },
+          {
+            "Word": [
+              "Olympics",
+              "Blade",
+              "Ballet",
+              "Tights",
+              "Glide",
+              "Pond",
+              "Figure Eight"
+            ],
+            "_name": "Can I Buy you a Rink",
+            "_description": "things associated with ice skating"
+          },
+          {
+            "Word": [
+              "Jet",
+              "Binoculars",
+              "Bug",
+              "Karate",
+              "Russia",
+              "Villian",
+              "Code"
+            ],
+            "_name": "The More the Merrier",
+            "_description": "things in a James Bond movie"
+          },
+          {
+            "Word": [
+              "Exam",
+              "Salary",
+              "Nervous",
+              "Application",
+              "Audition",
+              "Appointment",
+              "Corporation"
+            ],
+            "_name": "Welcome to the Real World",
+            "_description": "things associated with a Job Interview"
+          },
+          {
+            "Word": [
+              "Donkey",
+              "Funny",
+              "Ferry",
+              "Lazy",
+              "Mystery",
+              "Infirmary",
+              "Observatory"
+            ],
+            "_name": "Y Them",
+            "_description": "words that end with the letter Y"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Things that are Analyzed",
+          "Things you File",
+          "Things you Purchase (Buy)",
+          "Members of a Family",
+          "What a bikini might say",
+          "What you do in a Plane"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Hill",
+              "Floss",
+              "A Degree",
+              "A Shell",
+              "Tennessee",
+              "Voodoo",
+              "Committee"
+            ],
+            "_name": "Double Attack",
+            "_description": "words that end in double letters"
+          },
+          {
+            "Word": [
+              "Lightening",
+              "Mirror",
+              "Blonde",
+              "Bullet",
+              "Superman",
+              "Torpedo",
+              "Windshield"
+            ],
+            "_name": "What was That?",
+            "_description": "things that streak or are streaked"
+          },
+          {
+            "Word": [
+              "Brain",
+              "Kansas",
+              "Toto",
+              "Tornado",
+              "Munckins",
+              "Coward",
+              "Rainbow"
+            ],
+            "_name": "Are you a good Witch",
+            "_description": "things in the Wizard of Oz"
+          },
+          {
+            "Word": [
+              "Cookies",
+              "Quart",
+              "Shake",
+              "Skim",
+              "Foam",
+              "Soy",
+              "Ingredient"
+            ],
+            "_name": "The Cream of the Crop",
+            "_description": "things in a bakery"
+          },
+          {
+            "Word": [
+              "Brother",
+              "Clothes",
+              "Exam",
+              "Braces",
+              "Prom",
+              "Complexion",
+              "Crush"
+            ],
+            "_name": "The Generation Gap",
+            "_description": "things a teenager might think about"
+          },
+          {
+            "Word": [
+              "Coat",
+              "Winter",
+              "Eskimo",
+              "Shed",
+              "Expensive",
+              "Dye",
+              "Fluffy"
+            ],
+            "_name": "Make Mine Mink",
+            "_description": "things associated with fur"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Things you Sell",
+          "Things at the Dry Cleaners",
+          "Things you Need",
+          "Things in a Park",
+          "What a potatoe might say",
+          "Slippery Things"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Pudding",
+              "Chowder",
+              "Oatmeal",
+              "Ice Cream",
+              "Cantaloupe",
+              "Baby Food"
+            ],
+            "_name": "How's the new couch? Sofa, so good.",
+            "_description": "foods you eat with a spoon"
+          },
+          {
+            "Word": [
+              "Loss",
+              "Market",
+              "Business",
+              "Bull",
+              "Greenspan",
+              "Closing Bell"
+            ],
+            "_name": "I'm Dow Jonesing",
+            "_description": "Terms a wall street addict might hear on the financial news"
+          },
+          {
+            "Word": [
+              "Microphone",
+              "Microwave",
+              "Microsoft",
+              "Microchip",
+              "Microfilm",
+              "Micromanage"
+            ],
+            "_name": "It's the little things that count",
+            "_description": "things that all start with the word micro"
+          },
+          {
+            "Word": [
+              "Tomorrow",
+              "Jackpot",
+              "Fame",
+              "Revenge",
+              "Beach",
+              "Bad Pitt"
+            ],
+            "_name": "Out of my mind. Back in 5 minutes",
+            "_description": "Things people daydream about"
+          },
+          {
+            "Word": [
+              "Wax",
+              "The Club",
+              "Alarm",
+              "Garage",
+              "Policy",
+              "Cover"
+            ],
+            "_name": "He's my Knight in shining armor all",
+            "_description": "things guys use to protect their cars"
+          },
+          {
+            "Word": [
+              "Apron",
+              "Site",
+              "Dump",
+              "Chemical",
+              "Spill",
+              "Radiation"
+            ],
+            "_name": "The dukes of hazardous waste",
+            "_description": "things that someone that deals with hazardous materials might be familiar with"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Members of a Wedding Party",
+          "Why you Shave your Legs",
+          "What a Chimpmunk might say",
+          "Why you Compromise",
+          "Ways to End a Relationship",
+          "Things you Investigate"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Pizza",
+              "Chicken",
+              "Ham",
+              "Turkey",
+              "Meatballs",
+              "Macaroni and Chesse"
+            ],
+            "_name": "I have 5 meat loaves and I eat 2.  What's leftover?",
+            "_description": "foods people often eat as leftovers"
+          },
+          {
+            "Word": [
+              "Ladder",
+              "Rope",
+              "Extinguisher",
+              "Helicopter",
+              "Stretcher",
+              "St. Benard"
+            ],
+            "_name": "Do bungee rescuers use jumper cables?",
+            "_description": "things that might be used during a rescue attempt"
+          },
+          {
+            "Word": [
+              "Blood",
+              "Leg",
+              "Heart",
+              "Liver",
+              "Lungs",
+              "Marrow"
+            ],
+            "_name": "Who wants a piece of me?",
+            "_description": "Parts of the body one might donate to science"
+          },
+          {
+            "Word": [
+              "Museum",
+              "Park",
+              "Post Office",
+              "University",
+              "Airport",
+              "Restaurant"
+            ],
+            "_name": "Public displays of perfection",
+            "_description": "Places where you might see artwork on display"
+          },
+          {
+            "Word": [
+              "Question",
+              "Catch",
+              "Wave",
+              "Oath",
+              "Aerobics",
+              "Auction"
+            ],
+            "_name": "Reach for the sky",
+            "_description": "reasons you raise your hand in the air"
+          },
+          {
+            "Word": [
+              "Hospitality",
+              "Atlantic",
+              "Basketball",
+              "Wright Brothers",
+              "Tobacco",
+              "Tar Heels"
+            ],
+            "_name": "A Charlotte you won't see on the movie, Sex and the City",
+            "_description": "Things associate with North Carolina"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Types of Shellfish",
+          "Why you failed a test",
+          "Things you take to the beach",
+          "Why you turn the volume down",
+          "Soothing things",
+          "Things that melt"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Jerry",
+              "New York",
+              "Comedy",
+              "Kramer",
+              "Soup",
+              "Stand-Up",
+              "Larry David"
+            ],
+            "_name": "Baby Yada",
+            "_description": "things associated with Seinfeld"
+          },
+          {
+            "Word": [
+              "Cake",
+              "Pan",
+              "Apron",
+              "Knead",
+              "Icing",
+              "Yeast",
+              "Batter"
+            ],
+            "_name": "Fake it 'til you bake it",
+            "_description": "things associated with baking"
+          },
+          {
+            "Word": [
+              "Vacuum",
+              "Mop",
+              "Kleenex",
+              "Sleeve",
+              "Vinegar",
+              "Rag",
+              "Saliva"
+            ],
+            "_name": "We've found love in a soap-less place",
+            "_description": "things other than soap you use to clean"
+          },
+          {
+            "Word": [
+              "Garage",
+              "Gargle",
+              "Gamble",
+              "Genie",
+              "Grade",
+              "Greece",
+              "Gyrate"
+            ],
+            "_name": "Opposite ends of the globe",
+            "_description": "words that begin with the letter (g) and end with the letter (e)"
+          },
+          {
+            "Word": [
+              "Your Stomach",
+              "A Planet",
+              "Dentist",
+              "Stove",
+              "Tank",
+              "Lantern",
+              "Fireplace"
+            ],
+            "_name": "Sorry, I have gas",
+            "_description": "things that can have gas"
+          },
+          {
+            "Word": [
+              "Smooth",
+              "Pores",
+              "Tan",
+              "Band-Aid",
+              "Itch",
+              "Makeup",
+              "Dermatologist"
+            ],
+            "_name": "Look at the largest organ on that guy",
+            "_description": "things associated with skin"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "People who wear Hats",
+          "Things with Rainbows",
+          "Things with Tiles",
+          "What an Anchovy Might Say",
+          "Things in a Playground",
+          "Things on your Face"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Rose",
+              "Stem",
+              "Valentine's",
+              "Petals",
+              "Thorn",
+              "Pollen",
+              "Bouquet"
+            ],
+            "_name": "Your Vase or Mine?",
+            "_description": "things two flowerist might talk about on a date"
+          },
+          {
+            "Word": [
+              "Propose",
+              "Professor",
+              "Promise",
+              "Profile",
+              "Proud",
+              "Prop",
+              "Proctologist"
+            ],
+            "_name": "Going Pro",
+            "_description": "words that start with the letters (pro)"
+          },
+          {
+            "Word": [
+              "Spagetti",
+              "Italy",
+              "Lasagna",
+              "Sauce",
+              "Mac",
+              "Bow-Tie",
+              "Olive Garden"
+            ],
+            "_name": "Send Noods",
+            "_description": "things associated with pasta"
+          },
+          {
+            "Word": [
+              "Lion",
+              "Truck",
+              "Tornado",
+              "Ogre",
+              "Joker",
+              "Cannibal",
+              "Stampede"
+            ],
+            "_name": "Last selfie you'll ever take",
+            "_description": "things you hope never approach you from behind, while you are taking a selfie"
+          },
+          {
+            "Word": [
+              "Dogg",
+              "Nelson",
+              "Cyrus",
+              "Cheech",
+              "McConaughey",
+              "Rogen",
+              "Harrelson"
+            ],
+            "_name": "Mount Kushmore",
+            "_description": "celebs who might appear on a monument dedicated to stoners"
+          },
+          {
+            "Word": [
+              "Cash",
+              "Big",
+              "Win",
+              "7",
+              "Quick",
+              "Millions",
+              "Lucky"
+            ],
+            "_name": "You scratch-off my back, I'll scratch-off yours",
+            "_description": "words seen on lottery tickets"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Things you Display",
+          "Things you put Out",
+          "Things that are Edible",
+          "What a Hammock might say",
+          "Car Terms",
+          "Bodies of Water"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Muhammand",
+              "Serena",
+              "Magic",
+              "Tiger",
+              "Babe",
+              "Lebron",
+              "Kareem"
+            ],
+            "_name": "Off to a Jock-Y start",
+            "_description": "first names of some of the greatest athletes in history"
+          },
+          {
+            "Word": [
+              "100,000 Pyramid",
+              "24",
+              "9-1-1",
+              "20/20",
+              "60 Minutes",
+              "48 Hours",
+              "Hawaii Five-0"
+            ],
+            "_name": "Television, 90210",
+            "_description": "tv shows that have numbers in the title"
+          },
+          {
+            "Word": [
+              "Boat",
+              "Wind",
+              "Solar",
+              "Science",
+              "Thermos",
+              "Tesla",
+              "Compost"
+            ],
+            "_name": "The Gretas Love of All",
+            "_description": "things environmental activist Greta Thunberg might smile at you for using"
+          },
+          {
+            "Word": [
+              "Horns",
+              "Barn",
+              "Grass",
+              "Jersey",
+              "Hoof",
+              "Cud",
+              "Udder"
+            ],
+            "_name": "Raising the Steaks",
+            "_description": "words a cattle farmer might use"
+          },
+          {
+            "Word": [
+              "Little",
+              "Me",
+              "Goodbye",
+              "Best",
+              "Minnesota",
+              "DNA",
+              "Bling"
+            ],
+            "_name": "Preach, Lizzo",
+            "_description": "words that appear in Lizzo hit song Truth Hurts"
+          },
+          {
+            "Word": [
+              "Less",
+              "Chess",
+              "Guess",
+              "Princess",
+              "Confess",
+              "Express",
+              "Mistress"
+            ],
+            "_name": "Don't be a smart ess",
+            "_description": "words that end with the letters (ess)"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Things with Extensions",
+          "Types of Endings",
+          "Things you Spy on",
+          "What Lunch might say",
+          "Parts of a Song",
+          "Types of Coins"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Pizza",
+              "Baby",
+              "Furniture",
+              "Mail",
+              "Speech",
+              "Groceries",
+              "Viagra"
+            ],
+            "_name": "You Better Bring It",
+            "_description": "things that get delivered"
+          },
+          {
+            "Word": [
+              "Library",
+              "Sophmore",
+              "Dorm",
+              "Cafeteria",
+              "Sororities",
+              "Keg",
+              "Streaking"
+            ],
+            "_name": "Quad Goals",
+            "_description": "Things you might see when you take your kids on a college campus tour"
+          },
+          {
+            "Word": [
+              "Apple",
+              "Cookie",
+              "Jack",
+              "Cherry",
+              "Margarita",
+              "Olive",
+              "Ginger"
+            ],
+            "_name": "I'm Al, Al Fresco",
+            "_description": "Food terms that are also names of people"
+          },
+          {
+            "Word": [
+              "Exit",
+              "Fastest",
+              "Ramp",
+              "Cross",
+              "Lane",
+              "Merge",
+              "Arrived"
+            ],
+            "_name": "Miss Direction",
+            "_description": "words Siri might say while guiding you to your destination"
+          },
+          {
+            "Word": [
+              "Umbrellas",
+              "Puzzles",
+              "Waffles",
+              "Jokes",
+              "Scrabble",
+              "Bagpipes",
+              "Fanny Packs"
+            ],
+            "_name": "Days and Confused",
+            "_description": "quirky things that are celebrated with their own day"
+          },
+          {
+            "Word": [
+              "Dandruff",
+              "Janitor",
+              "Acne",
+              "Crumbs",
+              "Chapped",
+              "Hearse",
+              "Hemorrhoids"
+            ],
+            "_name": "Roses are Dead, Violets are Through",
+            "_description": "words that do not often appear in romantic poetry"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Things you do Standing up",
+          "Things that Flutter",
+          "Types of Questions",
+          "What a Dumpster might say",
+          "Bridges",
+          "Fingers on your Hand"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Stir",
+              "Peel",
+              "Scramble",
+              "Taste",
+              "Boil",
+              "Mash",
+              "Squeeze"
+            ],
+            "_name": "Spooning and Forking",
+            "_description": "verbs associated with food"
+          },
+          {
+            "Word": [
+              "Earth",
+              "Father",
+              "Evil",
+              "Israel",
+              "Sin",
+              "Moses",
+              "Flesh"
+            ],
+            "_name": "Something Old, Something New",
+            "_description": "words that appear in the old and new testaments of the bible"
+          },
+          {
+            "Word": [
+              "Barking",
+              "Wagging",
+              "Digging",
+              "Whining",
+              "Escaping",
+              "Chasing",
+              "Howling"
+            ],
+            "_name": "Articles of Impoochment",
+            "_description": "things that would get a dog in trouble"
+          },
+          {
+            "Word": [
+              "Restaurant",
+              "Office",
+              "Class",
+              "Airport",
+              "Stadium",
+              "Kindegardan",
+              "Auditorium"
+            ],
+            "_name": "A Thing of Booty",
+            "_description": "places where you see a lot of chairs"
+          },
+          {
+            "Word": [
+              "Pockets",
+              "Balls",
+              "Scratch",
+              "Chalk",
+              "Cue",
+              "Rail",
+              "Felt"
+            ],
+            "_name": "Nice Rack",
+            "_description": "things associated with the game of pool"
+          },
+          {
+            "Word": [
+              "Georgia",
+              "Gender",
+              "Germany",
+              "Gem",
+              "Giuliani",
+              "Ginger",
+              "Genesis"
+            ],
+            "_name": "Intro to Geometry",
+            "_description": "words that like geometry that begin with a soft (g)"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Types of Hoops",
+          "Things in a Bucket",
+          "Other Names for Sex",
+          "What Crutches Might Say",
+          "Parts of a Kangaroo",
+          "Things in a Bank"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Tongue",
+              "Belly Button",
+              "Wrinkles",
+              "Unibrow",
+              "Gray",
+              "Crack",
+              "Double Chin"
+            ],
+            "_name": "Dad Bawd",
+            "_description": "body parts you would not want your dad to flaunt during a burlesque show"
+          },
+          {
+            "Word": [
+              "Zoo",
+              "China",
+              "Veterinarian",
+              "Bamboo",
+              "Black-and-White",
+              "Fur",
+              "Eye Patch"
+            ],
+            "_name": "The Pandalorian",
+            "_description": "things you might see in the mandalorian if the title character was a panda"
+          },
+          {
+            "Word": [
+              "Table",
+              "Saw",
+              "Assistant",
+              "Box",
+              "Scream",
+              "Clapping",
+              "Bow"
+            ],
+            "_name": "Abra Cadaver",
+            "_description": "things associated with a magician cutting a person in half"
+          },
+          {
+            "Word": [
+              "Lick",
+              "Cry",
+              "Quiet",
+              "Beg",
+              "Crawl",
+              "Oink",
+              "Squeal"
+            ],
+            "_name": "She's a Real Whippersnapper",
+            "_description": "commands a dominatrix might yell at her client"
+          },
+          {
+            "Word": [
+              "Candles",
+              "Eight",
+              "Jews",
+              "Holiday",
+              "Dreidel",
+              "Hebrew",
+              "December"
+            ],
+            "_name": "Not Today, Santa",
+            "_description": "things associated with Hanukkah"
+          },
+          {
+            "Word": [
+              "Six",
+              "Ax",
+              "Mix",
+              "Flex",
+              "Relax",
+              "Botox",
+              "Spandex"
+            ],
+            "_name": "Tell my Ex It's the End",
+            "_description": "words that end with an (x)"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Wild Things",
+          "Things You Sleep with",
+          "Types of Drivers",
+          "What the Pacific Might Say",
+          "Things a Judge Uses",
+          "Brands of Soap"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Yes",
+              "Home Run",
+              "Blackjack",
+              "Checkmate",
+              "Yahtzee",
+              "Bingo",
+              "Yee-Haw"
+            ],
+            "_name": "The Shrill of Victory",
+            "_description": "words people might scream after winning something"
+          },
+          {
+            "Word": [
+              "Q-Tip",
+              "Fingertip",
+              "Tiptoe",
+              "Multiply",
+              "Centipede",
+              "Tippsy",
+              "Multiplayer"
+            ],
+            "_name": "Tip Included",
+            "_description": "words that include the consecutive letters (T-I-P)"
+          },
+          {
+            "Word": [
+              "Walls",
+              "Celing",
+              "Windows",
+              "Basement",
+              "Pipes",
+              "Mold",
+              "Divorce"
+            ],
+            "_name": "Little House on the Scary",
+            "_description": "things people talk about when renovating a home"
+          },
+          {
+            "Word": [
+              "Adam",
+              "Address",
+              "Adolescent",
+              "Adventure",
+              "Admission",
+              "Addiction",
+              "Adorable"
+            ],
+            "_name": "Don't the Ads",
+            "_description": "words that start with the letters (AD)"
+          },
+          {
+            "Word": [
+              "Rowing",
+              "Karate",
+              "Wrestling",
+              "Gymnastic",
+              "Weightlighting",
+              "Fencing",
+              "Triathlon"
+            ],
+            "_name": "The Ow-lympics",
+            "_description": "olympic events that would make you sore if you tried them for the first time"
+          },
+          {
+            "Word": [
+              "Tires",
+              "Massage",
+              "Batteries",
+              "Peace",
+              "Marriage",
+              "Vacation",
+              "Climax"
+            ],
+            "_name": "Make it Last all Night",
+            "_description": "things people who will last for a long, long time"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Things with a Face",
+          "Sun Protection Items",
+          "Things you do in Bed",
+          "What Cinnamon Might Say",
+          "Cities in California",
+          "Types of Trees"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Knife",
+              "Razor",
+              "Cheddar",
+              "Needle",
+              "Turn",
+              "Edge",
+              "Fangs"
+            ],
+            "_name": "How Tacky",
+            "_description": "things like a tack that can be sharp"
+          },
+          {
+            "Word": [
+              "Perfume",
+              "Skunk",
+              "Niagra",
+              "Sprinklers",
+              "Hair Spray",
+              "Kettle",
+              "Humidifier"
+            ],
+            "_name": "Mist Opportunities",
+            "_description": "things that emit a mist"
+          },
+          {
+            "Word": [
+              "Shuffle",
+              "Las Vegas",
+              "Solitaire",
+              "21",
+              "Poker",
+              "Deck",
+              "Gin"
+            ],
+            "_name": "Do we have a Deal",
+            "_description": "things associated with playing cards"
+          },
+          {
+            "Word": [
+              "Gold",
+              "Boxer",
+              "Odds",
+              "Luggage",
+              "Anchor",
+              "Flour",
+              "Options"
+            ],
+            "_name": "Any Weigh you Want it",
+            "_description": "things you might weigh"
+          },
+          {
+            "Word": [
+              "Daddy",
+              "Bagels",
+              "Red",
+              "Grace",
+              "Chef",
+              "Doorbell",
+              "Wicked"
+            ],
+            "_name": "Tank You, Call Again",
+            "_description": "names that appear in the popular shark tank products"
+          },
+          {
+            "Word": [
+              "Tiger Woods",
+              "Stallone",
+              "Jay-Z",
+              "Denzel",
+              "Michael Jordon",
+              "De Niro",
+              "Jonas"
+            ],
+            "_name": "Smokin' Michael Strahan",
+            "_description": "these people have appeared on the cover of cigar aficionado magazine"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Things with Lane",
+          "People Who Wear Glasses",
+          "Things with Elves",
+          "What Vanilla Might Say",
+          "Part of a School",
+          "Ways to Make Eggs"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Oprah",
+              "Beyonce",
+              "Elizabeth",
+              "Ivanka",
+              "Reese",
+              "Taylor",
+              "Nancy"
+            ],
+            "_name": "YAAAASSSS Queen",
+            "_description": "names on forbes list of the 100 most powerful women"
+          },
+          {
+            "Word": [
+              "Oprah",
+              "Bears",
+              "Second",
+              "Illinois",
+              "Jazz",
+              "Windy",
+              "Deep Dish"
+            ],
+            "_name": "The Land of Jordan",
+            "_description": "things associated with the city of Chicago"
+          },
+          {
+            "Word": [
+              "Oprah",
+              "Onion",
+              "Oscar",
+              "Opera",
+              "Outie",
+              "Organ",
+              "Ovary"
+            ],
+            "_name": "Uh Oh, Here comes the Five-O",
+            "_description": "five letter words that each start with the letter O"
+          },
+          {
+            "Word": [
+              "Oprah",
+              "Britney",
+              "Ellen",
+              "Meryl",
+              "Beiber",
+              "Springsteen",
+              "Conan"
+            ],
+            "_name": "You're Driving me Chrissy",
+            "_description": "celebs, such as Chrissy Teigen, you would be shocked to see as your Uber driver"
+          },
+          {
+            "Word": [
+              "Oprah",
+              "Grapes",
+              "Prince",
+              "Vikings",
+              "Plums",
+              "Haze",
+              "Violet"
+            ],
+            "_name": "Purp Walk",
+            "_description": "things associate with the color purple"
+          },
+          {
+            "Word": [
+              "Oprah",
+              "Pope",
+              "Nuns",
+              "Kermit",
+              "Pitt",
+              "Bachelor",
+              "Aniston"
+            ],
+            "_name": "Let's Get Ready to Mingle",
+            "_description": "these people who are not married"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Types of News",
+          "Things in a Yearbook",
+          "Gymnastic Moves",
+          "What a Recipe Might Say",
+          "Things you Buy a Dog",
+          "Types of Flowers"
+        ]
+      }
+    }
+  },
+  {
+    "Round": {
+      "Categories": {
+        "Category": [
+          {
+            "Word": [
+              "Spitting",
+              "Slap",
+              "Arguing",
+              "Fighting",
+              "Cursing",
+              "Cheating",
+              "Pushing"
+            ],
+            "_name": "Ejectile Dystfunction",
+            "_description": "things that might get a player kicked out of a game"
+          },
+          {
+            "Word": [
+              "Ocean",
+              "Octopus",
+              "Ink",
+              "Tentacles",
+              "Sushi",
+              "Camouflage",
+              "Calamari"
+            ],
+            "_name": "Squids these Days",
+            "_description": "things associated with squid"
+          },
+          {
+            "Word": [
+              "Comb",
+              "Compass",
+              "Comedian",
+              "Comma",
+              "Compliment",
+              "Combat",
+              "Comical"
+            ],
+            "_name": "You Need to COM Down",
+            "_description": "words that start with the letters C-O-M"
+          },
+          {
+            "Word": [
+              "Books",
+              "Desk",
+              "Plants",
+              "Antiques",
+              "Curtains",
+              "Quilt",
+              "Rocking Chair"
+            ],
+            "_name": "That's what She Shed",
+            "_description": "things you might see in a typical she shed"
+          },
+          {
+            "Word": [
+              "Fist",
+              "Alligator",
+              "Fruit",
+              "Ambulance",
+              "Tutu",
+              "Swamp",
+              "Urinal"
+            ],
+            "_name": "What Tha Florida?",
+            "_description": "words and headlines about a florida man doing something crazy"
+          },
+          {
+            "Word": [
+              "Weather",
+              "Knees",
+              "Food",
+              "Age",
+              "Rap",
+              "Aches",
+              "Manners"
+            ],
+            "_name": "My Neck, My Back, My Password and My Snack",
+            "_description": "things older folks complain about"
+          }
+        ]
+      },
+      "Circle": {
+        "Phrase": [
+          "Things that are Traded",
+          "Things you Donate",
+          "Things on a River",
+          "What a Saddle Might Say",
+          "Ways to Make Chicken",
+          "The Simpson's Character"
+        ]
+      }
+    }
+  }
+]
