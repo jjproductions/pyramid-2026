@@ -171,13 +171,31 @@ export default function HostScreen() {
 
   const startGame = async () => {
     const finalMode = gameState.settings?.gameMode || gameMode;
+
+    // Build ordered player lists per team for rotation
+    const allPlayers = Object.entries(gameState.players || {});
+    const team1Order = allPlayers.filter(([,p]) => p.team === 1).map(([id]) => id);
+    const team2Order = allPlayers.filter(([,p]) => p.team === 2).map(([id]) => id);
+
+    const giverId   = team1Order[0] || null;
+    const guesserId = team2Order[0] || null;
+
+    const rotationUpdates = {
+      'teams/1/giverIndex':  0,
+      'teams/1/playerOrder': team1Order,
+      'teams/2/giverIndex':  0,
+      'teams/2/playerOrder': team2Order,
+      currentTurn: { team: 1, giverId, guesserId },
+    };
+
     if (finalMode === 'classic') {
-      updateRoomState(roomId, { 
+      updateRoomState(roomId, {
+        ...rotationUpdates,
         status: 'round1',
         timer: gameState.settings?.timerDuration || DEFAULT_SETTINGS.timerDuration
       });
     } else {
-      updateRoomState(roomId, { status: 'generating' });
+      updateRoomState(roomId, { status: 'generating', ...rotationUpdates });
       try {
         const interests = players.map(p => p.interest).filter(Boolean);
         const board = await generatePyramidBoard(interests, gameState.settings);
@@ -207,11 +225,32 @@ export default function HostScreen() {
     }
   };
 
+  // Helper: compute next giverId / guesserId after a turn ends
+  const computeNextTurn = (nextTeam) => {
+    const teams = gameState.teams;
+    // The team that just played advances their giver index
+    const justPlayedTeam = gameState.currentTurn.team;
+    const currentIdx = teams[justPlayedTeam]?.giverIndex || 0;
+    const order = teams[justPlayedTeam]?.playerOrder || [];
+    const nextIdx = order.length > 0 ? (currentIdx + 1) % order.length : 0;
+
+    const nextTeamOrder = teams[nextTeam]?.playerOrder || [];
+    const nextTeamIdx   = teams[nextTeam]?.giverIndex || 0;
+
+    const giverId   = nextTeamOrder[nextTeamIdx]  || null;
+    const guesserId = order[nextIdx] || null; // opposing team's newly-advanced player
+
+    return {
+      [`teams/${justPlayedTeam}/giverIndex`]: nextIdx,
+      currentTurn: { team: nextTeam, giverId, guesserId },
+    };
+  };
+
   const nextTurn = () => {
     const nextTeam = gameState.currentTurn.team === 1 ? 2 : 1;
     updateRoomState(roomId, {
+      ...computeNextTurn(nextTeam),
       status: 'round1',
-      currentTurn: { team: nextTeam, role: 'giver' },
       activeCategoryIndex: null,
       categoryRevealed: false,
       activeWordIndex: 0,
@@ -223,9 +262,17 @@ export default function HostScreen() {
   };
 
   const startNewRound = () => {
+    // Preserve giverIndex rotation across rounds; reset board and start with team 1
+    const teams = gameState.teams;
+    const t1Order = teams[1]?.playerOrder || [];
+    const t2Order = teams[2]?.playerOrder || [];
+    const t1Idx   = teams[1]?.giverIndex || 0;
+    const t2Idx   = teams[2]?.giverIndex || 0;
+    const giverId   = t1Order[t1Idx] || null;
+    const guesserId = t2Order[t2Idx] || null;
     updateRoomState(roomId, {
       board: getRandomCategories(gameState.settings),
-      currentTurn: { team: 1, role: 'giver' },
+      currentTurn: { team: 1, giverId, guesserId },
       activeCategoryIndex: null,
       categoryRevealed: false,
       activeWordIndex: 0,
@@ -242,15 +289,30 @@ export default function HostScreen() {
       winningTeam = 2;
     }
     updateRoomState(roomId, {
+      status: 'winners_circle_selecting',
+      currentTurn: { team: winningTeam, giverId: null, guesserId: null },
+      'teams/1/score': 0,
+      'teams/2/score': 0
+    });
+  };
+
+  const confirmWinnersCirclePlayers = (giverId, guesserId) => {
+    const circleBoard = getRandomCircle(gameState.settings).map(tile => ({ ...tile, summaryRevealed: false }));
+    updateRoomState(roomId, {
       status: 'winners_circle',
-      currentTurn: { team: winningTeam, role: 'giver' },
-      circleBoard: getRandomCircle(gameState.settings),
+      currentTurn: { team: gameState.currentTurn.team, giverId, guesserId },
+      circleBoard,
       activeCircleIndex: 0,
       circleTimer: gameState.settings?.circleTimerDuration || DEFAULT_SETTINGS.circleTimerDuration,
       circleTimerActive: false,
-      circleRevealed: false,
-      'teams/1/score': 0,
-      'teams/2/score': 0
+      circleRevealed: false
+    });
+  };
+
+  const revealCircleTile = (idx) => {
+    if (gameState.status !== 'winners_circle_summary') return;
+    updateRoomState(roomId, {
+      [`circleBoard/${idx}/summaryRevealed`]: true
     });
   };
 
@@ -405,12 +467,24 @@ export default function HostScreen() {
           <h1 className="room-code-display">{roomId}</h1>
           <p>Join on your phone!</p>
           
-          <div className="players-list">
-            <div className="players-grid">
-              {players.map((p, i) => (
-                <div key={i} className={`player-badge team-${p.team}`}>{p.name} {p.interest ? `(${p.interest})` : ''} - Team {p.team}</div>
-              ))}
-            </div>
+          <div className="lobby-teams">
+            {[1, 2].map(teamNum => {
+              const teamPlayers = players.filter(p => p.team === teamNum);
+              return (
+                <div key={teamNum} className={`lobby-team-column team-col-${teamNum}`}>
+                  <div className="lobby-team-header">Team {teamNum} ({teamPlayers.length})</div>
+                  {teamPlayers.length === 0 
+                    ? <div className="lobby-team-empty">Waiting...</div>
+                    : teamPlayers.map((p, i) => (
+                        <div key={i} className={`player-badge team-${teamNum}`}>
+                          <span className="player-order">#{i + 1}</span>
+                          {p.name}{p.interest ? ` (${p.interest})` : ''}
+                        </div>
+                      ))
+                  }
+                </div>
+              );
+            })}
           </div>
 
           <div className="game-mode-selector" style={{ margin: '2rem 0' }}>
@@ -421,10 +495,12 @@ export default function HostScreen() {
             </div>
           </div>
 
-          {players.length >= 2 && (
+          {(players.filter(p => p.team === 1).length >= 2 && players.filter(p => p.team === 2).length >= 2) ? (
             <button className="btn btn-primary start-btn" onClick={startGame}>
               Start Game
             </button>
+          ) : (
+            <p style={{ color: 'var(--danger)', fontWeight: 'bold' }}>Need at least 2 players per team to start.</p>
           )}
         </div>
       )}
@@ -440,7 +516,18 @@ export default function HostScreen() {
         <div className="board-view">
           <div className="score-header">
             <div className="team-score">Team 1: {gameState.teams[1].score}</div>
-            <h2>Team {gameState.currentTurn.team}'s Turn to Pick</h2>
+            <div style={{ textAlign: 'center' }}>
+              <h2 style={{ margin: 0 }}>Team {gameState.currentTurn.team}'s Turn</h2>
+              {(() => {
+                const giver   = gameState.players?.[gameState.currentTurn?.giverId];
+                const guesser = gameState.players?.[gameState.currentTurn?.guesserId];
+                return (giver || guesser) ? (
+                  <p style={{ margin: '0.25rem 0 0', fontSize: '1rem', color: 'var(--text-muted)' }}>
+                    🎤 {giver?.name || '?'} &nbsp;→&nbsp; 🤔 {guesser?.name || '?'}
+                  </p>
+                ) : null;
+              })()}
+            </div>
             <div className="team-score">Team 2: {gameState.teams[2].score}</div>
           </div>
           
@@ -521,7 +608,66 @@ export default function HostScreen() {
         </div>
       )}
 
-      {gameState.status === 'winners_circle' && (
+      {gameState.status === 'winners_circle_selecting' && (
+        <div className="selecting-view" style={{ textAlign: 'center', width: '100%', maxWidth: '600px' }}>
+          <h1 style={{ color: '#FFB800', marginBottom: '2rem' }}>Winner's Circle</h1>
+          <h2>Team {gameState.currentTurn.team} Wins!</h2>
+          <p style={{ marginBottom: '2rem' }}>Select who will play:</p>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-around', gap: '2rem', marginBottom: '3rem' }}>
+            <div style={{ flex: 1, background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '10px' }}>
+              <h3 style={{ marginBottom: '1rem' }}>Giver (Back to TV)</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {players.filter(p => p.team === gameState.currentTurn.team).map((p, i) => {
+                  const id = Object.keys(gameState.players).find(k => gameState.players[k] === p);
+                  return (
+                    <button 
+                      key={id}
+                      className={`btn ${gameState.currentTurn.giverId === id ? 'btn-primary' : 'btn-secondary'}`}
+                      onClick={() => updateRoomState(roomId, { 'currentTurn/giverId': id })}
+                      style={{ padding: '0.5rem' }}
+                    >
+                      {p.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={{ flex: 1, background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '10px' }}>
+              <h3 style={{ marginBottom: '1rem' }}>Guesser</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {players.filter(p => p.team === gameState.currentTurn.team).map((p, i) => {
+                  const id = Object.keys(gameState.players).find(k => gameState.players[k] === p);
+                  return (
+                    <button 
+                      key={id}
+                      className={`btn ${gameState.currentTurn.guesserId === id ? 'btn-success' : 'btn-secondary'}`}
+                      onClick={() => updateRoomState(roomId, { 'currentTurn/guesserId': id })}
+                      style={{ padding: '0.5rem', opacity: gameState.currentTurn.giverId === id ? 0.5 : 1 }}
+                      disabled={gameState.currentTurn.giverId === id}
+                    >
+                      {p.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <button 
+            className="btn btn-primary" 
+            style={{ fontSize: '2rem', padding: '1rem 3rem' }}
+            disabled={!gameState.currentTurn.giverId || !gameState.currentTurn.guesserId}
+            onClick={() => confirmWinnersCirclePlayers(gameState.currentTurn.giverId, gameState.currentTurn.guesserId)}
+          >
+            Start Winner's Circle!
+          </button>
+        </div>
+      )}
+
+      {['winners_circle', 'winners_circle_summary'].includes(gameState.status) && (
+
         <div className="winners-circle-view" style={{ textAlign: 'center', width: '100%', minHeight: '60vh', position: 'relative' }}>
           <div className="timer" style={{ 
             position: 'absolute', 
@@ -538,44 +684,58 @@ export default function HostScreen() {
           
           <div className="circle-pyramid">
              <div className="pyramid-row top-row">
-               <div className={`circle-card ${gameState.circleBoard[5].completed ? 'completed' : ''} ${gameState.activeCircleIndex === 5 && gameState.circleRevealed ? 'active' : ''}`}>
-                 {gameState.circleBoard[5].completed ? '' : (gameState.circleRevealed && gameState.activeCircleIndex === 5 ? gameState.circleBoard[5].phrase : '???')}
+               <div 
+                 className={`circle-card ${gameState.circleBoard[5].completed ? 'completed' : ''} ${gameState.activeCircleIndex === 5 && gameState.circleRevealed && gameState.status === 'winners_circle' ? 'active' : ''} ${gameState.status === 'winners_circle_summary' && !gameState.circleBoard[5].completed ? 'clickable' : ''}`}
+                 onClick={() => revealCircleTile(5)}
+                 style={{ cursor: gameState.status === 'winners_circle_summary' && !gameState.circleBoard[5].completed ? 'pointer' : 'default' }}
+               >
+                 {gameState.circleBoard[5].completed ? '' : ((gameState.circleRevealed && gameState.activeCircleIndex === 5 && gameState.status === 'winners_circle') || gameState.circleBoard[5].summaryRevealed ? gameState.circleBoard[5].phrase : '???')}
                </div>
              </div>
              <div className="pyramid-row middle-row">
                {[3, 4].map(idx => (
-                 <div key={idx} className={`circle-card ${gameState.circleBoard[idx].completed ? 'completed' : ''} ${gameState.activeCircleIndex === idx && gameState.circleRevealed ? 'active' : ''}`}>
-                   {gameState.circleBoard[idx].completed ? '' : (gameState.circleRevealed && gameState.activeCircleIndex === idx ? gameState.circleBoard[idx].phrase : '???')}
+                 <div 
+                   key={idx} 
+                   className={`circle-card ${gameState.circleBoard[idx].completed ? 'completed' : ''} ${gameState.activeCircleIndex === idx && gameState.circleRevealed && gameState.status === 'winners_circle' ? 'active' : ''} ${gameState.status === 'winners_circle_summary' && !gameState.circleBoard[idx].completed ? 'clickable' : ''}`}
+                   onClick={() => revealCircleTile(idx)}
+                   style={{ cursor: gameState.status === 'winners_circle_summary' && !gameState.circleBoard[idx].completed ? 'pointer' : 'default' }}
+                 >
+                   {gameState.circleBoard[idx].completed ? '' : ((gameState.circleRevealed && gameState.activeCircleIndex === idx && gameState.status === 'winners_circle') || gameState.circleBoard[idx].summaryRevealed ? gameState.circleBoard[idx].phrase : '???')}
                  </div>
                ))}
              </div>
              <div className="pyramid-row bottom-row">
                {[0, 1, 2].map(idx => (
-                 <div key={idx} className={`circle-card ${gameState.circleBoard[idx].completed ? 'completed' : ''} ${gameState.activeCircleIndex === idx && gameState.circleRevealed ? 'active' : ''}`}>
-                   {gameState.circleBoard[idx].completed ? '' : (gameState.circleRevealed && gameState.activeCircleIndex === idx ? gameState.circleBoard[idx].phrase : '???')}
+                 <div 
+                   key={idx} 
+                   className={`circle-card ${gameState.circleBoard[idx].completed ? 'completed' : ''} ${gameState.activeCircleIndex === idx && gameState.circleRevealed && gameState.status === 'winners_circle' ? 'active' : ''} ${gameState.status === 'winners_circle_summary' && !gameState.circleBoard[idx].completed ? 'clickable' : ''}`}
+                   onClick={() => revealCircleTile(idx)}
+                   style={{ cursor: gameState.status === 'winners_circle_summary' && !gameState.circleBoard[idx].completed ? 'pointer' : 'default' }}
+                 >
+                   {gameState.circleBoard[idx].completed ? '' : ((gameState.circleRevealed && gameState.activeCircleIndex === idx && gameState.status === 'winners_circle') || gameState.circleBoard[idx].summaryRevealed ? gameState.circleBoard[idx].phrase : '???')}
                  </div>
                ))}
              </div>
           </div>
 
-          {!gameState.circleRevealed && (
+          {gameState.status === 'winners_circle' && !gameState.circleRevealed && (
             <button className="btn btn-primary" onClick={startCircleClock} style={{ marginTop: '3rem', fontSize: '2rem', padding: '1rem 4rem' }}>START CLOCK</button>
           )}
 
-          {gameState.circleRevealed && (
+          {gameState.status === 'winners_circle' && gameState.circleRevealed && (
             <div className="controls" style={{ marginTop: '4rem', display: 'flex', gap: '2rem', justifyContent: 'center' }}>
               <button className="btn btn-success" onClick={markCircleCorrect} style={{ fontSize: '2rem', padding: '1rem 4rem' }}>CORRECT</button>
               <button className="btn btn-danger" onClick={markCirclePass} style={{ fontSize: '2rem', padding: '1rem 4rem' }}>PASS</button>
             </div>
           )}
-        </div>
-      )}
 
-      {gameState.status === 'winners_circle_summary' && (
-        <div className="summary-view">
-          <h1>Time's Up!</h1>
-          <h2>Nice try!</h2>
-          <button className="btn btn-primary" onClick={() => updateRoomState(roomId, { status: 'lobby' })}>Back to Lobby</button>
+          {gameState.status === 'winners_circle_summary' && (
+            <div className="controls" style={{ marginTop: '4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+              <h2 style={{ color: '#ff3366', margin: 0 }}>Time's Up!</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem', margin: 0 }}>Tap any "???" tile to reveal the answer.</p>
+              <button className="btn btn-primary" onClick={() => updateRoomState(roomId, { status: 'lobby' })} style={{ fontSize: '1.5rem', padding: '1rem 3rem' }}>Back to Lobby</button>
+            </div>
+          )}
         </div>
       )}
 

@@ -13,6 +13,7 @@ export default function PlayerScreen() {
   const [gameState, setGameState] = useState(null);
   const [playerId, setPlayerId] = useState('');
   const [loading, setLoading] = useState(true);
+  const [joiningStep, setJoiningStep] = useState('info'); // 'info' or 'team'
   const sessionRestored = useRef(false);
 
   useEffect(() => {
@@ -48,18 +49,17 @@ export default function PlayerScreen() {
     return () => unsubscribe();
   }, [roomId]);
 
-  const handleJoin = async (e) => {
+  const handleInfoSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) return;
+    setJoiningStep('team');
+  };
 
+  const handleTeamSelect = async (team) => {
     const uuid = 'user_' + Math.random().toString(36).substr(2, 9);
     setPlayerId(uuid);
     
-    const playerCount = gameState ? Object.keys(gameState.players || {}).length : 0;
-    const team = (playerCount % 2) + 1;
-    const role = 'giver';
-    
-    await updateRoomState(roomId, { [`players/${uuid}`]: { name, interest, team, role } });
+    await updateRoomState(roomId, { [`players/${uuid}`]: { name, interest, team } });
 
     // Persist session so refreshes don't re-create the player
     localStorage.setItem(SESSION_KEY(roomId), JSON.stringify({ playerId: uuid, name, interest }));
@@ -84,23 +84,49 @@ export default function PlayerScreen() {
   }
 
   if (!joined) {
-    return (
-      <div className="player-join-screen fade-in">
-        <h2>Room: {roomId}</h2>
-        <form onSubmit={handleJoin} className="join-form">
-          <input type="text" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} className="input-code" required />
-          <input type="text" placeholder="Hobby / Inside Joke" value={interest} onChange={(e) => setInterest(e.target.value)} className="input-code" style={{ marginTop: '1rem' }} />
-          <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-            Join
-          </button>
-        </form>
-      </div>
-    );
+    if (joiningStep === 'info') {
+      return (
+        <div className="player-join-screen fade-in">
+          <h2>Room: {roomId}</h2>
+          <form onSubmit={handleInfoSubmit} className="join-form">
+            <input type="text" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} className="input-code" required />
+            <input type="text" placeholder="Hobby / Inside Joke" value={interest} onChange={(e) => setInterest(e.target.value)} className="input-code" style={{ marginTop: '1rem' }} />
+            <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+              Next
+            </button>
+          </form>
+        </div>
+      );
+    }
+
+    if (joiningStep === 'team') {
+      const players = Object.values(gameState?.players || {});
+      const team1Count = players.filter(p => p.team === 1).length;
+      const team2Count = players.filter(p => p.team === 2).length;
+
+      return (
+        <div className="player-join-screen fade-in">
+          <h2>Pick a Team</h2>
+          <div className="team-picker">
+            <button className="team-card team-1" onClick={() => handleTeamSelect(1)}>
+              <div className="team-card-title">Team 1</div>
+              <div className="team-card-count">{team1Count} {team1Count === 1 ? 'player' : 'players'}</div>
+            </button>
+            <button className="team-card team-2" onClick={() => handleTeamSelect(2)}>
+              <div className="team-card-title">Team 2</div>
+              <div className="team-card-count">{team2Count} {team2Count === 1 ? 'player' : 'players'}</div>
+            </button>
+          </div>
+          <button className="btn btn-secondary" onClick={() => setJoiningStep('info')} style={{ marginTop: '2rem' }}>Back</button>
+        </div>
+      );
+    }
   }
 
   const myPlayer = gameState.players?.[playerId];
-  const isMyTurn = gameState.currentTurn?.team === myPlayer?.team;
-  const isGiver = myPlayer?.role === 'giver';
+  const isGiver = gameState.currentTurn?.giverId === playerId;
+  const isGuesser = gameState.currentTurn?.guesserId === playerId;
+  const isMyTurn = isGiver || isGuesser;
 
   const passLimit = gameState.settings?.passLimit || 'unlimited';
   const passesUsed = gameState.passesUsed || 0;
@@ -307,6 +333,13 @@ export default function PlayerScreen() {
         <div className="waiting-view">
           <h2>Time's Up!</h2>
           <p>Look at the TV for scores.</p>
+        </div>
+      )}
+
+      {gameState.status === 'winners_circle_selecting' && (
+        <div className="waiting-view">
+          <h2>Team {gameState.currentTurn.team} is going to the Winner's Circle!</h2>
+          <p>The host is selecting who will play...</p>
         </div>
       )}
 
