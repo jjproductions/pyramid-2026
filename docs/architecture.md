@@ -29,13 +29,13 @@ graph TD
 ```
 
 - **Host View (`HostScreen.jsx`)**: The "TV" screen showing the main game board, scoreboard, category selection status, and the countdown timer. The Host client acts as the authority for the game clock, updating the database every second when a timer is active.
-- **Player View (`PlayerScreen.jsx`)**: The "Controller" view meant for smartphones or secondary browser tabs. Players join, get automatically assigned to Team 1 or Team 2, select categories (when it's their team's turn), read clues (clue giver role), and register correct answers or passes.
+- **Player View (`PlayerScreen.jsx`)**: The "Controller" view meant for smartphones or secondary browser tabs. Players join, manually select their team (Team 1 or Team 2), and are presented with the appropriate game controls based on their role (Giver, Guesser, or Waiting/Watching).
 
 ---
 
 ## 2. State Synchronization Layer (`firebase.js`)
 
-Real-time coordination is handled in [firebase.js](file:///Users/jj/code/AI/pyramid-2026/src/firebase.js) through a set of abstraction helper functions. It supports two modes based on your credentials:
+Real-time coordination is handled in `src/firebase.js` through a set of abstraction helper functions. It supports two modes based on your credentials:
 
 ### A. Production Mode (Firebase Realtime Database)
 When `firebaseConfig.apiKey` is supplied via environment variables:
@@ -60,7 +60,7 @@ The Host Screen acts as the master authority for the timer state to prevent race
 
 ```mermaid
 sequenceDiagram
-    participant Player as Player Screen
+    participant Player as Player Screen (Giver)
     participant DB as Firebase / LocalStorage
     participant Host as Host Screen (Master Clock)
 
@@ -75,3 +75,15 @@ sequenceDiagram
     Host->>DB: updateRoomState (timerActive: false, status: 'round_summary')
     DB->>Player: Transition to Time's Up Screen
 ```
+
+---
+
+## 4. Turn Rotation & Player Roles
+
+The game enforces a strictly rotating "Giver" and "Guesser" role for the active team. The opposing team is placed in a "Waiting" state.
+
+1. **Team Tracking**: Each team has an array of player IDs (`playerOrder`), a `giverIndex`, and a `guesserIndex`.
+2. **Initial Roles**: The host can manually select the 1st Giver for each team in the lobby. By default, the 1st person to join a team is the Guesser, and the 2nd person is the Giver.
+3. **Turn Rotation**: When a team's turn ends, their internal `giverIndex` and `guesserIndex` advance by 1 (wrapping around the roster via modulo). Both roles are always populated by teammates.
+4. **Round Alternation**: The `nextStartingTeam` state ensures that each new round alternates which team goes first. After a Winner's Circle, the non-participating (losing) team is explicitly assigned as the `nextStartingTeam` for the next game.
+5. **Winner's Circle**: The Winner's Circle transitions into an intermediate `winners_circle_selecting` state. This displays the winning team's roster on the Host screen, allowing the Host to explicitly tap to assign who will Give and who will Guess for the final showdown.

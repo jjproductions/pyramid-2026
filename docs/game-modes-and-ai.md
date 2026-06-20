@@ -4,12 +4,18 @@ This document outlines the game modes available in the **$25,000 Pyramid Game** 
 
 ---
 
-## 1. Classic Mode
+## 1. Game Mode Configuration
 
-In **Classic Mode**, the game reads pre-defined game configurations from a local static file: [data/content.json](file:///Users/jj/code/AI/pyramid-2026/data/content.json).
+The active game mode is controlled exclusively via the **Settings Modal** on the Host screen. This ensures the host has a single source of truth for the game configuration. The selected mode ("Classic" or "AI Personalized") is displayed on the lobby UI.
+
+---
+
+## 2. Classic Mode
+
+In **Classic Mode**, the game reads pre-defined game configurations from a local static file (default: `data/content.json`).
 
 ### Setup and Selection Logic
-1. **Selecting a Round**: When the host starts the game, the server randomly picks one round object from the array in `content.json`.
+1. **Selecting a Round**: When the host starts the game, the server randomly picks one round object from the array in the configured content file.
 2. **Category Extraction**: Each round defines a list of categories (typically 6). For each category:
    - The category name (`_name`) and clue description (`_description`) are fetched.
    - The array of associated words (`Word`) is shuffled using a random comparator (`0.5 - Math.random()`).
@@ -18,7 +24,7 @@ In **Classic Mode**, the game reads pre-defined game configurations from a local
 
 ---
 
-## 2. AI Personalized Mode
+## 3. AI Personalized Mode
 
 In **AI Personalized Mode**, the categories and words are generated on the fly tailored to player interests.
 
@@ -30,6 +36,7 @@ sequenceDiagram
     participant Game as Active Game Board
 
     User->>Host: Input custom names & hobbies/inside jokes
+    Host->>Host: Settings Modal configures AI Provider
     Host->>AI: generatePyramidBoard(interests)
     AI->>Host: Returns JSON schema with 6 custom categories
     Host->>Game: Formats and shuffles board items, starts Round 1
@@ -37,13 +44,13 @@ sequenceDiagram
 
 ### The Generation Pipeline (`src/ai.js`)
 
-When the host clicks **Start Game** in AI mode, the application extracts interest inputs from the players:
+When the host clicks **Start Game** while AI mode is active, the application extracts interest inputs from the joined players:
 ```javascript
 const interests = players.map(p => p.interest).filter(Boolean);
 const board = await generatePyramidBoard(interests);
 ```
 
-This invokes `generatePyramidBoard` in [src/ai.js](file:///Users/jj/code/AI/pyramid-2026/src/ai.js), which queries the chosen LLM provider.
+This invokes `generatePyramidBoard` in `src/ai.js`, which queries the chosen LLM provider.
 
 #### System Prompt Template
 The AI is instructed to act as a content generator for the game, generating exactly 6 categories with exactly 7 words each:
@@ -76,11 +83,11 @@ Output exactly this JSON format and absolutely nothing else:
 
 ---
 
-## 3. Robust JSON Parsing (`extractJsonFromText`)
+## 4. Robust JSON Parsing (`extractJsonFromText`)
 
 To handle instances where models include conversational text, markdown code blocks (e.g. ` ```json `), or extra spacing, the parsing function `extractJsonFromText` applies fallback strategies:
 
 - **First Try**: `JSON.parse(text)` directly.
-- **Second Try**: Use regex to extract contents wrapped inside triple-backtick markdown blocks: `/```(?:json)?\s*([\s\S]*?)\s*```/i`.
+- **Second Try**: Use regex to extract contents wrapped inside triple-backtick markdown blocks.
 - **Third Try**: Search for the index of the first `[` bracket and the last `]` bracket, extracting and parsing the substring between them.
 - **Error Handling**: Throws an informative error if all attempts fail, and the Host screen falls back to Classic mode so the game can continue.

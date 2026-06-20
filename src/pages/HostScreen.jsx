@@ -83,6 +83,8 @@ export default function HostScreen() {
   const [roomId, setRoomId] = useState('');
   const [gameState, setGameState] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [pairingModes, setPairingModes] = useState({ 1: false, 2: false });
+  const [teamPairs, setTeamPairs] = useState({ 1: {}, 2: {} });
   const [settingsTab, setSettingsTab] = useState('game');
   const [localSettings, setLocalSettings] = useState(DEFAULT_SETTINGS);
   const [initialGivers, setInitialGivers] = useState({ 1: null, 2: null });
@@ -170,6 +172,26 @@ export default function HostScreen() {
   const players = Object.values(gameState.players || {});
 
   const startGame = async () => {
+    // Validate pairs if pairing mode is enabled
+    for (const tNum of [1, 2]) {
+      if (pairingModes[tNum]) {
+        const teamPlayerIds = Object.keys(gameState.players).filter(id => gameState.players[id].team === tNum);
+        const pairsCount = {};
+        for (const pId of teamPlayerIds) {
+          const pairId = teamPairs[tNum][pId];
+          if (pairId === undefined || pairId === '') {
+            alert(`Team ${tNum} has unassigned players in pairing mode.`);
+            return;
+          }
+          pairsCount[pairId] = (pairsCount[pairId] || 0) + 1;
+        }
+        if (Object.values(pairsCount).some(c => c !== 2)) {
+          alert(`Team ${tNum} pairs are invalid. Each pair must have exactly 2 players.`);
+          return;
+        }
+      }
+    }
+
     const finalMode = gameState.settings?.gameMode || 'classic';
 
     // Build ordered player lists per team for rotation
@@ -191,8 +213,8 @@ export default function HostScreen() {
     const activeGiverIdx = startingTeam === 1 ? t1GiverIdx : t2GiverIdx;
     const activeGuesserIdx = startingTeam === 1 ? t1GuesserIdx : t2GuesserIdx;
 
-    const giverId   = activeOrder[activeGiverIdx] || null;
-    const guesserId = activeOrder[activeGuesserIdx] || null;
+    let giverId   = activeOrder[activeGiverIdx] || null;
+    let guesserId = activeOrder[activeGuesserIdx] || null;
 
     const rotationUpdates = {
       'teams/1/giverIndex':  t1GiverIdx !== -1 ? t1GiverIdx : 0,
@@ -204,6 +226,29 @@ export default function HostScreen() {
       currentTurn: { team: startingTeam, giverId, guesserId },
       nextStartingTeam: startingTeam === 1 ? 2 : 1
     };
+
+    [1, 2].forEach(tNum => {
+      if (pairingModes[tNum]) {
+        const pairArray = [];
+        Object.entries(teamPairs[tNum]).forEach(([pId, pairId]) => {
+          if (!pairArray[pairId]) pairArray[pairId] = [];
+          pairArray[pairId].push(pId);
+        });
+        rotationUpdates[`teams/${tNum}/isPairingMode`] = true;
+        rotationUpdates[`teams/${tNum}/pairs`] = pairArray;
+        rotationUpdates[`teams/${tNum}/activePairIndex`] = 0;
+        rotationUpdates[`teams/${tNum}/pairRoleSwap`] = false;
+
+        if (startingTeam === tNum) {
+           const p = pairArray[0];
+           rotationUpdates.currentTurn.giverId = p[1];
+           rotationUpdates.currentTurn.guesserId = p[0];
+        }
+      } else {
+        rotationUpdates[`teams/${tNum}/isPairingMode`] = false;
+        rotationUpdates[`teams/${tNum}/pairs`] = null;
+      }
+    });
 
     if (finalMode === 'classic') {
       updateRoomState(roomId, {
@@ -245,31 +290,59 @@ export default function HostScreen() {
   // Helper: compute next giverId / guesserId after a turn ends
   const computeNextTurn = (nextTeam) => {
     const teams = gameState.teams;
-    // The team that just played advances their indices
     const justPlayedTeam = gameState.currentTurn.team;
-    const order = teams[justPlayedTeam]?.playerOrder || [];
-    const numPlayers = order.length;
     
     let nextGiverIdx = teams[justPlayedTeam]?.giverIndex || 0;
     let nextGuesserIdx = teams[justPlayedTeam]?.guesserIndex || 0;
+    let nextActivePairIdx = teams[justPlayedTeam]?.activePairIndex || 0;
+    let nextPairRoleSwap = teams[justPlayedTeam]?.pairRoleSwap || false;
 
-    if (numPlayers > 0) {
-      nextGiverIdx = (nextGiverIdx + 1) % numPlayers;
-      nextGuesserIdx = (nextGuesserIdx + 1) % numPlayers;
+    if (teams[justPlayedTeam]?.isPairingMode) {
+      const pairsCount = teams[justPlayedTeam].pairs?.length || 1;
+      nextActivePairIdx = nextActivePairIdx + 1;
+      if (nextActivePairIdx >= pairsCount) {
+        nextActivePairIdx = 0;
+        nextPairRoleSwap = !nextPairRoleSwap;
+      }
+    } else {
+      const numPlayers = teams[justPlayedTeam]?.playerOrder?.length || 0;
+      if (numPlayers > 0) {
+        nextGiverIdx = (nextGiverIdx + 1) % numPlayers;
+        nextGuesserIdx = (nextGuesserIdx + 1) % numPlayers;
+      }
     }
 
-    const nextTeamOrder = teams[nextTeam]?.playerOrder || [];
-    const nextTeamGiverIdx = teams[nextTeam]?.giverIndex || 0;
-    const nextTeamGuesserIdx = teams[nextTeam]?.guesserIndex || 0;
+    let giverId = null;
+    let guesserId = null;
 
-    const giverId   = nextTeamOrder[nextTeamGiverIdx]  || null;
-    const guesserId = nextTeamOrder[nextTeamGuesserIdx] || null;
+    if (teams[nextTeam]?.isPairingMode) {
+      const activePairIdx = teams[nextTeam].activePairIndex || 0;
+      const roleSwap = teams[nextTeam].pairRoleSwap || false;
+      const pair = teams[nextTeam].pairs?.[activePairIdx];
+      if (pair) {
+        giverId = roleSwap ? pair[0] : pair[1];
+        guesserId = roleSwap ? pair[1] : pair[0];
+      }
+    } else {
+      const nextTeamOrder = teams[nextTeam]?.playerOrder || [];
+      const nextTeamGiverIdx = teams[nextTeam]?.giverIndex || 0;
+      const nextTeamGuesserIdx = teams[nextTeam]?.guesserIndex || 0;
+      giverId   = nextTeamOrder[nextTeamGiverIdx]  || null;
+      guesserId = nextTeamOrder[nextTeamGuesserIdx] || null;
+    }
 
-    return {
-      [`teams/${justPlayedTeam}/giverIndex`]: nextGiverIdx,
-      [`teams/${justPlayedTeam}/guesserIndex`]: nextGuesserIdx,
+    const updates = {
       currentTurn: { team: nextTeam, giverId, guesserId },
     };
+
+    if (teams[justPlayedTeam]?.isPairingMode) {
+      updates[`teams/${justPlayedTeam}/activePairIndex`] = nextActivePairIdx;
+      updates[`teams/${justPlayedTeam}/pairRoleSwap`] = nextPairRoleSwap;
+    } else {
+      updates[`teams/${justPlayedTeam}/giverIndex`] = nextGiverIdx;
+      updates[`teams/${justPlayedTeam}/guesserIndex`] = nextGuesserIdx;
+    }
+    return updates;
   };
 
   const nextTurn = () => {
@@ -292,12 +365,24 @@ export default function HostScreen() {
     const teams = gameState.teams;
     const startingTeam = gameState.nextStartingTeam || 1;
     
-    const activeOrder = teams[startingTeam]?.playerOrder || [];
-    const activeGiverIdx   = teams[startingTeam]?.giverIndex || 0;
-    const activeGuesserIdx = teams[startingTeam]?.guesserIndex || 0;
-    
-    const giverId   = activeOrder[activeGiverIdx] || null;
-    const guesserId = activeOrder[activeGuesserIdx] || null;
+    let giverId = null;
+    let guesserId = null;
+
+    if (teams[startingTeam]?.isPairingMode) {
+      const activePairIdx = teams[startingTeam].activePairIndex || 0;
+      const roleSwap = teams[startingTeam].pairRoleSwap || false;
+      const pair = teams[startingTeam].pairs?.[activePairIdx];
+      if (pair) {
+        giverId = roleSwap ? pair[0] : pair[1];
+        guesserId = roleSwap ? pair[1] : pair[0];
+      }
+    } else {
+      const activeOrder = teams[startingTeam]?.playerOrder || [];
+      const activeGiverIdx   = teams[startingTeam]?.giverIndex || 0;
+      const activeGuesserIdx = teams[startingTeam]?.guesserIndex || 0;
+      giverId   = activeOrder[activeGiverIdx] || null;
+      guesserId = activeOrder[activeGuesserIdx] || null;
+    }
     
     updateRoomState(roomId, {
       board: getRandomCategories(gameState.settings),
@@ -503,9 +588,26 @@ export default function HostScreen() {
           <div className="lobby-teams">
             {[1, 2].map(teamNum => {
               const teamPlayers = players.filter(p => p.team === teamNum);
+              const canPair = teamPlayers.length >= 4 && teamPlayers.length % 2 === 0;
+
               return (
                 <div key={teamNum} className={`lobby-team-column team-col-${teamNum}`}>
-                  <div className="lobby-team-header">Team {teamNum} ({teamPlayers.length})</div>
+                  <div className="lobby-team-header">
+                    Team {teamNum} ({teamPlayers.length})
+                  </div>
+                  {canPair && (
+                    <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                      <input 
+                        type="checkbox" 
+                        id={`pair-mode-${teamNum}`}
+                        checked={pairingModes[teamNum]}
+                        onChange={(e) => setPairingModes(prev => ({ ...prev, [teamNum]: e.target.checked }))}
+                        style={{ transform: 'scale(1.2)' }}
+                      />
+                      <label htmlFor={`pair-mode-${teamNum}`} style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Enable Pairing Mode</label>
+                    </div>
+                  )}
+
                   {teamPlayers.length === 0 
                     ? <div className="lobby-team-empty">Waiting...</div>
                     : teamPlayers.map((p, i) => {
@@ -517,15 +619,29 @@ export default function HostScreen() {
                               <span className="player-order">#{i + 1}</span>
                               {p.name}{p.interest ? ` (${p.interest})` : ''}
                             </div>
-                            <label title="Set as 1st Giver" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                              <input 
-                                type="radio" 
-                                name={`team-${teamNum}-giver`}
-                                checked={isGiver}
-                                onChange={() => setInitialGivers(prev => ({ ...prev, [teamNum]: id }))}
-                                style={{ transform: 'scale(1.5)', cursor: 'pointer', margin: 0, accentColor: 'var(--primary)' }}
-                              />
-                            </label>
+                            
+                            {pairingModes[teamNum] ? (
+                              <select 
+                                value={teamPairs[teamNum][id] || ''} 
+                                onChange={(e) => setTeamPairs(prev => ({ ...prev, [teamNum]: { ...prev[teamNum], [id]: e.target.value } }))}
+                                style={{ padding: '0.25rem', borderRadius: '4px', background: 'var(--bg-main)', color: 'white', border: '1px solid var(--secondary)' }}
+                              >
+                                <option value="">Pair...</option>
+                                {Array.from({ length: teamPlayers.length / 2 }).map((_, idx) => (
+                                  <option key={idx} value={idx}>Pair {idx + 1}</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <label title="Set as 1st Giver" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                                <input 
+                                  type="radio" 
+                                  name={`team-${teamNum}-giver`}
+                                  checked={isGiver}
+                                  onChange={() => setInitialGivers(prev => ({ ...prev, [teamNum]: id }))}
+                                  style={{ transform: 'scale(1.5)', cursor: 'pointer', margin: 0, accentColor: 'var(--primary)' }}
+                                />
+                              </label>
+                            )}
                           </div>
                         );
                       })

@@ -62,7 +62,26 @@ By default, Vite will start the development server at [http://localhost:5173/](h
 - **Host View**: Open [http://localhost:5173/host](http://localhost:5173/host) to initiate a room and render the game board (usually cast to a TV).
 - **Player View**: Open [http://localhost:5173/join](http://localhost:5173/join) or enter the generated 4-letter room code to play as a player using a smartphone or secondary screen.
 
-## 5. Running End-to-End Tests
+## 5. Gameplay Mechanics
+
+### The Join Flow
+Players join the game from their mobile devices using the 4-letter room code.
+1. The player enters their Name and an "Interest" (used if the Host selects AI Personalized mode).
+2. The player manually selects to join **Team 1** or **Team 2**.
+3. In the Host Lobby, the Host can use radio buttons to manually select who will be the "1st Giver" for each team. The game requires at least 2 players per team to start.
+
+### Turn Rotation
+During the game, turns strictly rotate between Team 1 and Team 2.
+- The game engine pairs up players from the same team, assigning one as the **Giver** and another as the **Guesser**.
+- When a team's turn ends, the roles advance automatically to the next players in the roster.
+- Every new round alternates which team starts. If coming off a Winner's Circle, the team that *did not* participate gets to start the next match.
+
+### Winner's Circle
+If a team wins, they proceed to the Winner's Circle.
+- The Host manually selects the Giver and Guesser from the winning team's roster.
+- If the 60-second timer expires, the board stays up, and the Host can manually tap "???" tiles to reveal the missed phrases to the room.
+
+## 6. Running End-to-End Tests
 
 The repository includes a Puppeteer script (`test.cjs`) that tests the entire game flow automatically by spawning a host tab and two player tabs, joining the room, clicking the start game button, and playing the first round.
 
