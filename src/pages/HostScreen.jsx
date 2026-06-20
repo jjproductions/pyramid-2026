@@ -10,17 +10,16 @@ import RoundSummary from '../components/host/RoundSummary';
 import WinnersCircle from '../components/host/WinnersCircle';
 import SettingsModal from '../components/host/SettingsModal';
 
-// Eagerly import all json files from the data directory
-const contentModules = import.meta.glob('../../data/*.json', { eager: true });
+// Lazily import all json files from the data directory
+const contentModules = import.meta.glob('../../data/*.json');
 const contentFiles = Object.keys(contentModules).reduce((acc, path) => {
   const filename = path.split('/').pop();
-  acc[filename] = contentModules[path].default;
+  acc[filename] = contentModules[path];
   return acc;
 }, {});
 
 // Fallback to the first found file, or content.json
 const defaultFilename = Object.keys(contentFiles)[0] || 'content.json';
-const categoriesData = contentFiles[defaultFilename] || [];
 
 const DEFAULT_SETTINGS = {
   gameMode: 'classic',
@@ -49,11 +48,18 @@ const generateRoomCode = () => {
   return result;
 };
 
-const getRandomCategories = (settings = DEFAULT_SETTINGS) => {
+const getRandomCategories = async (settings = DEFAULT_SETTINGS) => {
   const numCategories = settings.numCategories || 6;
   const numWords = settings.numWordsPerCategory || 6;
   const chosenFile = settings.contentFile || defaultFilename;
-  const data = contentFiles[chosenFile] || categoriesData;
+  
+  let data;
+  if (contentFiles[chosenFile]) {
+    const module = await contentFiles[chosenFile]();
+    data = module.default || module;
+  } else {
+    data = [];
+  }
   
   if (!data || data.length === 0) return [];
   const randomRoundIndex = Math.floor(Math.random() * data.length);
@@ -72,9 +78,15 @@ const getRandomCategories = (settings = DEFAULT_SETTINGS) => {
   });
 };
 
-const getRandomCircle = (settings = DEFAULT_SETTINGS) => {
+const getRandomCircle = async (settings = DEFAULT_SETTINGS) => {
   const chosenFile = settings?.contentFile || defaultFilename;
-  const data = contentFiles[chosenFile] || categoriesData;
+  let data;
+  if (contentFiles[chosenFile]) {
+    const module = await contentFiles[chosenFile]();
+    data = module.default || module;
+  } else {
+    data = [];
+  }
 
   if (!data || data.length === 0) return [];
   const randomRoundIndex = Math.floor(Math.random() * data.length);
@@ -102,28 +114,34 @@ export default function HostScreen() {
   useEffect(() => {
     const code = generateRoomCode();
     setRoomId(code);
+    let unsubscribe;
     
-    const initialState = {
-      status: 'lobby',
-      players: {},
-      teams: {
-        1: { score: 0 },
-        2: { score: 0 }
-      },
-      board: getRandomCategories(DEFAULT_SETTINGS),
-      currentTurn: { team: 1, role: 'giver' },
-      activeCategoryIndex: null,
-      activeWordIndex: 0,
-      timer: DEFAULT_SETTINGS.timerDuration,
-      timerActive: false,
-      wordsScored: 0,
-      passesUsed: 0,
-      settings: DEFAULT_SETTINGS
+    getRandomCategories(DEFAULT_SETTINGS).then(initialBoard => {
+      const initialState = {
+        status: 'lobby',
+        players: {},
+        teams: {
+          1: { score: 0 },
+          2: { score: 0 }
+        },
+        board: initialBoard,
+        currentTurn: { team: 1, role: 'giver' },
+        activeCategoryIndex: null,
+        activeWordIndex: 0,
+        timer: DEFAULT_SETTINGS.timerDuration,
+        timerActive: false,
+        wordsScored: 0,
+        passesUsed: 0,
+        settings: DEFAULT_SETTINGS
+      };
+      
+      setRoomState(code, initialState);
+      unsubscribe = subscribeToRoom(code, (state) => setGameState(state));
+    });
+    
+    return () => {
+      if (unsubscribe) unsubscribe();
     };
-    
-    setRoomState(code, initialState);
-    const unsubscribe = subscribeToRoom(code, (state) => setGameState(state));
-    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -371,7 +389,7 @@ export default function HostScreen() {
     });
   };
 
-  const startNewRound = () => {
+  const startNewRound = async () => {
     // Preserve indices rotation across rounds; reset board and alternate starting team
     const teams = gameState.teams;
     const startingTeam = gameState.nextStartingTeam || 1;
@@ -395,8 +413,9 @@ export default function HostScreen() {
       guesserId = activeOrder[activeGuesserIdx] || null;
     }
     
+    const newBoard = await getRandomCategories(gameState.settings);
     updateRoomState(roomId, {
-      board: getRandomCategories(gameState.settings),
+      board: newBoard,
       currentTurn: { team: startingTeam, giverId, guesserId },
       nextStartingTeam: startingTeam === 1 ? 2 : 1,
       activeCategoryIndex: null,
@@ -425,8 +444,9 @@ export default function HostScreen() {
     });
   };
 
-  const confirmWinnersCirclePlayers = (giverId, guesserId) => {
-    const circleBoard = getRandomCircle(gameState.settings).map(tile => ({ ...tile, summaryRevealed: false }));
+  const confirmWinnersCirclePlayers = async (giverId, guesserId) => {
+    const rawCircle = await getRandomCircle(gameState.settings);
+    const circleBoard = rawCircle.map(tile => ({ ...tile, summaryRevealed: false }));
     updateRoomState(roomId, {
       status: 'winners_circle',
       currentTurn: { team: gameState.currentTurn.team, giverId, guesserId },
@@ -585,10 +605,11 @@ export default function HostScreen() {
     setSettingsOpen(true);
   };
 
-  const saveSettings = () => {
+  const saveSettings = async () => {
+    const newBoard = await getRandomCategories(localSettings);
     updateRoomState(roomId, { 
       settings: localSettings,
-      board: getRandomCategories(localSettings),
+      board: newBoard,
       timer: localSettings.timerDuration
     });
     setSettingsOpen(false);
