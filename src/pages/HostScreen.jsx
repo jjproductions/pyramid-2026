@@ -198,9 +198,7 @@ export default function HostScreen() {
     prevCircleTimerRef.current = currentCircleTimer;
   }, [currentTimer, currentCircleTimer, gameState?.timerActive, gameState?.circleTimerActive, roomId, gameState?.activeCategoryIndex, gameState?.settings?.soundEnabled]);
 
-  if (!gameState) return <div className="loading">Creating Room...</div>;
-
-  const players = useMemo(() => Object.values(gameState.players || {}), [gameState.players]);
+    const players = useMemo(() => Object.values(gameState?.players || {}), [gameState?.players]);
 
   const startGame = useCallback(async () => {
     // Validate pairs if pairing mode is enabled
@@ -617,6 +615,8 @@ export default function HostScreen() {
     });
     setSettingsOpen(false);
   }, [localSettings, roomId]);
+
+  if (!gameState) return <div className="loading">Creating Room...</div>;
 
   return (
     <div className="host-screen fade-in">
