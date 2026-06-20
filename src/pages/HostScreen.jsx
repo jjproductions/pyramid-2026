@@ -3,6 +3,13 @@ import { subscribeToRoom, setRoomState, updateRoomState } from '../firebase';
 import { generatePyramidBoard } from '../ai';
 import { playDing, playBuzz, playSwoosh, playClick, playWin } from '../utils/sounds';
 
+import LobbyView from '../components/host/LobbyView';
+import GameBoard from '../components/host/GameBoard';
+import ActiveCategory from '../components/host/ActiveCategory';
+import RoundSummary from '../components/host/RoundSummary';
+import WinnersCircle from '../components/host/WinnersCircle';
+import SettingsModal from '../components/host/SettingsModal';
+
 // Eagerly import all json files from the data directory
 const contentModules = import.meta.glob('../../data/*.json', { eager: true });
 const contentFiles = Object.keys(contentModules).reduce((acc, path) => {
@@ -590,92 +597,19 @@ export default function HostScreen() {
   return (
     <div className="host-screen fade-in">
       {gameState.status === 'lobby' && (
-        <div className="lobby-view">
-          <button className="settings-btn" onClick={openSettings} title="Settings">⚙️</button>
-          <h2>Room Code</h2>
-          <h1 className="room-code-display">{roomId}</h1>
-          <p>Join on your phone!</p>
-          
-          <div className="lobby-teams">
-            {[1, 2].map(teamNum => {
-              const teamPlayers = players.filter(p => p.team === teamNum);
-              const canPair = teamPlayers.length >= 4 && teamPlayers.length % 2 === 0;
-
-              return (
-                <div key={teamNum} className={`lobby-team-column team-col-${teamNum}`}>
-                  <div className="lobby-team-header">
-                    Team {teamNum} ({teamPlayers.length})
-                  </div>
-                  {canPair && (
-                    <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
-                      <input 
-                        type="checkbox" 
-                        id={`pair-mode-${teamNum}`}
-                        checked={pairingModes[teamNum]}
-                        onChange={(e) => setPairingModes(prev => ({ ...prev, [teamNum]: e.target.checked }))}
-                        style={{ transform: 'scale(1.2)' }}
-                      />
-                      <label htmlFor={`pair-mode-${teamNum}`} style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Enable Pairing Mode</label>
-                    </div>
-                  )}
-
-                  {teamPlayers.length === 0 
-                    ? <div className="lobby-team-empty">Waiting...</div>
-                    : teamPlayers.map((p, i) => {
-                        const id = Object.keys(gameState.players).find(k => gameState.players[k] === p);
-                        const isGiver = initialGivers[teamNum] === id || (!initialGivers[teamNum] && i === 1) || (teamPlayers.length === 1 && i === 0);
-                        return (
-                          <div key={i} className={`player-badge team-${teamNum}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', boxSizing: 'border-box' }}>
-                            <div style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              <span className="player-order">#{i + 1}</span>
-                              {p.name}{p.interest ? ` (${p.interest})` : ''}
-                            </div>
-                            
-                            {pairingModes[teamNum] ? (
-                              <select 
-                                value={teamPairs[teamNum][id] || ''} 
-                                onChange={(e) => setTeamPairs(prev => ({ ...prev, [teamNum]: { ...prev[teamNum], [id]: e.target.value } }))}
-                                style={{ padding: '0.25rem', borderRadius: '4px', background: 'var(--bg-main)', color: 'white', border: '1px solid var(--secondary)' }}
-                              >
-                                <option value="">Pair...</option>
-                                {Array.from({ length: teamPlayers.length / 2 }).map((_, idx) => (
-                                  <option key={idx} value={idx}>Pair {idx + 1}</option>
-                                ))}
-                              </select>
-                            ) : (
-                              <label title="Set as 1st Giver" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                                <input 
-                                  type="radio" 
-                                  name={`team-${teamNum}-giver`}
-                                  checked={isGiver}
-                                  onChange={() => setInitialGivers(prev => ({ ...prev, [teamNum]: id }))}
-                                  style={{ transform: 'scale(1.5)', cursor: 'pointer', margin: 0, accentColor: 'var(--primary)' }}
-                                />
-                              </label>
-                            )}
-                          </div>
-                        );
-                      })
-                  }
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="game-mode-display" style={{ margin: '2rem 0', fontSize: '1.2rem', color: 'var(--text-muted)' }}>
-            Current Mode: <strong style={{ color: 'var(--primary)' }}>
-              {gameState.settings?.gameMode === 'ai' ? 'AI Personalized' : 'Classic (Built-in)'}
-            </strong>
-          </div>
-
-          {(players.filter(p => p.team === 1).length >= 2 && players.filter(p => p.team === 2).length >= 2) ? (
-            <button className="btn btn-primary start-btn" onClick={startGame}>
-              Start Game
-            </button>
-          ) : (
-            <p style={{ color: 'var(--danger)', fontWeight: 'bold' }}>Need at least 2 players per team to start.</p>
-          )}
-        </div>
+        <LobbyView 
+          roomId={roomId}
+          gameState={gameState}
+          players={players}
+          pairingModes={pairingModes}
+          setPairingModes={setPairingModes}
+          teamPairs={teamPairs}
+          setTeamPairs={setTeamPairs}
+          initialGivers={initialGivers}
+          setInitialGivers={setInitialGivers}
+          startGame={startGame}
+          openSettings={openSettings}
+        />
       )}
 
       {gameState.status === 'generating' && (
@@ -686,392 +620,56 @@ export default function HostScreen() {
       )}
 
       {gameState.status === 'round1' && gameState.activeCategoryIndex == null && (
-        <div className="board-view">
-          <div className="score-header">
-            <div className="team-score">Team 1: {gameState.teams[1].score}</div>
-            <div style={{ textAlign: 'center' }}>
-              <h2 style={{ margin: 0 }}>Team {gameState.currentTurn.team}'s Turn</h2>
-              {(() => {
-                const giver   = gameState.players?.[gameState.currentTurn?.giverId];
-                const guesser = gameState.players?.[gameState.currentTurn?.guesserId];
-                return (giver || guesser) ? (
-                  <p style={{ margin: '0.25rem 0 0', fontSize: '1rem', color: 'var(--text-muted)' }}>
-                    🎤 {giver?.name || '?'} &nbsp;→&nbsp; 🤔 {guesser?.name || '?'}
-                  </p>
-                ) : null;
-              })()}
-            </div>
-            <div className="team-score">Team 2: {gameState.teams[2].score}</div>
-          </div>
-          
-          <div className="pyramid-board">
-            {gameState.board.map((cat, index) => (
-              <div 
-                key={index} 
-                className={`category-card ${cat.completed ? 'completed' : 'clickable'}`}
-                onClick={() => !cat.completed && selectCategory(index)}
-                style={{ cursor: cat.completed ? 'default' : 'pointer' }}
-              >
-                {cat.completed ? '' : cat.name}
-              </div>
-            ))}
-          </div>
-          
-          {gameState.board.every(cat => cat.completed) && (
-            <div style={{ marginTop: '3rem' }}>
-              <h2 style={{ marginBottom: '1rem', color: '#00E5FF' }}>Round Complete!</h2>
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                <button className="btn btn-secondary" onClick={startNewRound}>Start Next Round</button>
-                {(gameState.teams?.[1]?.score !== gameState.teams?.[2]?.score) && (
-                  <button className="btn btn-primary" onClick={startWinnersCircle}>Go to Winner's Circle</button>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+        <GameBoard 
+          gameState={gameState}
+          selectCategory={selectCategory}
+          startNewRound={startNewRound}
+          startWinnersCircle={startWinnersCircle}
+        />
       )}
 
       {gameState.status === 'round1' && gameState.activeCategoryIndex != null && (
-        <div className="active-category-view" style={{ position: 'relative', width: '100%', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          
-          <div className="timer" style={{ 
-            position: 'absolute', 
-            top: '0', 
-            right: '2rem', 
-            fontSize: '4rem',
-            fontWeight: 'bold',
-            color: currentTimer <= 10 ? '#ff3366' : '#fff'
-          }}>
-            0:{currentTimer < 10 ? `0${currentTimer}` : currentTimer}
-          </div>
-
-          <h2 style={{ fontSize: '3rem', color: '#a0a0a0', marginBottom: '1rem' }}>
-            {gameState.board[gameState.activeCategoryIndex].name}
-          </h2>
-          
-          {!gameState.categoryRevealed ? (
-            <div style={{ marginTop: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
-              <h3 style={{ fontSize: '2.5rem', color: '#fff', margin: 0, lineHeight: 1.4 }}>
-                {gameState.board[gameState.activeCategoryIndex].description}
-              </h3>
-              <button className="btn btn-primary" onClick={startCategory} style={{ fontSize: '2rem', padding: '1rem 4rem' }}>
-                GO!
-              </button>
-            </div>
-          ) : (
-            <>
-              <h2 className="active-word" style={{ marginTop: '2rem', color: '#FFB800', fontSize: '5rem', textTransform: 'uppercase', letterSpacing: '2px' }}>
-                {gameState.board[gameState.activeCategoryIndex].words[gameState.activeWordIndex]}
-              </h2>
-              
-              <div className="controls" style={{ marginTop: '4rem', display: 'flex', gap: '2rem', justifyContent: 'center' }}>
-                <button className="btn btn-success" onClick={markCorrect} style={{ fontSize: '2rem', padding: '1rem 4rem', backgroundColor: '#2E7D32', color: 'white', fontWeight: 'bold' }}>CORRECT</button>
-                <button className="btn btn-danger" onClick={markPass} style={{ fontSize: '2rem', padding: '1rem 4rem', backgroundColor: '#C62828', color: 'white', fontWeight: 'bold' }}>PASS</button>
-              </div>
-            </>
-          )}
-        </div>
+        <ActiveCategory 
+          gameState={gameState}
+          currentTimer={currentTimer}
+          startCategory={startCategory}
+          markCorrect={markCorrect}
+          markPass={markPass}
+        />
       )}
 
       {gameState.status === 'round_summary' && (
-        <div className="summary-view">
-          <h1>Time's Up!</h1>
-          <h2>Team {gameState.currentTurn.team} scored {gameState.wordsScored} points!</h2>
-          <button className="btn btn-primary" onClick={nextTurn}>Next Turn</button>
-        </div>
+        <RoundSummary 
+          gameState={gameState}
+          nextTurn={nextTurn}
+        />
       )}
 
-      {gameState.status === 'winners_circle_selecting' && (
-        <div className="selecting-view" style={{ textAlign: 'center', width: '100%', maxWidth: '600px' }}>
-          <h1 style={{ color: '#FFB800', marginBottom: '2rem' }}>Winner's Circle</h1>
-          <h2>Team {gameState.currentTurn.team} Wins!</h2>
-          <p style={{ marginBottom: '2rem' }}>Select who will play:</p>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-around', gap: '2rem', marginBottom: '3rem' }}>
-            <div style={{ flex: 1, background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '10px' }}>
-              <h3 style={{ marginBottom: '1rem' }}>Giver (Back to TV)</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {players.filter(p => p.team === gameState.currentTurn.team).map((p, i) => {
-                  const id = Object.keys(gameState.players).find(k => gameState.players[k] === p);
-                  return (
-                    <button 
-                      key={id}
-                      className={`btn ${gameState.currentTurn.giverId === id ? 'btn-primary' : 'btn-secondary'}`}
-                      onClick={() => updateRoomState(roomId, { 'currentTurn/giverId': id })}
-                      style={{ padding: '0.5rem' }}
-                    >
-                      {p.name}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div style={{ flex: 1, background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '10px' }}>
-              <h3 style={{ marginBottom: '1rem' }}>Guesser</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {players.filter(p => p.team === gameState.currentTurn.team).map((p, i) => {
-                  const id = Object.keys(gameState.players).find(k => gameState.players[k] === p);
-                  return (
-                    <button 
-                      key={id}
-                      className={`btn ${gameState.currentTurn.guesserId === id ? 'btn-success' : 'btn-secondary'}`}
-                      onClick={() => updateRoomState(roomId, { 'currentTurn/guesserId': id })}
-                      style={{ padding: '0.5rem', opacity: gameState.currentTurn.giverId === id ? 0.5 : 1 }}
-                      disabled={gameState.currentTurn.giverId === id}
-                    >
-                      {p.name}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          <button 
-            className="btn btn-primary" 
-            style={{ fontSize: '2rem', padding: '1rem 3rem' }}
-            disabled={!gameState.currentTurn.giverId || !gameState.currentTurn.guesserId}
-            onClick={() => confirmWinnersCirclePlayers(gameState.currentTurn.giverId, gameState.currentTurn.guesserId)}
-          >
-            Start Winner's Circle!
-          </button>
-        </div>
+      {['winners_circle_selecting', 'winners_circle', 'winners_circle_summary', 'winners_circle_win'].includes(gameState.status) && (
+        <WinnersCircle 
+          roomId={roomId}
+          gameState={gameState}
+          currentCircleTimer={currentCircleTimer}
+          players={players}
+          updateRoomState={updateRoomState}
+          confirmWinnersCirclePlayers={confirmWinnersCirclePlayers}
+          startCircleClock={startCircleClock}
+          markCircleCorrect={markCircleCorrect}
+          markCirclePass={markCirclePass}
+          revealCircleTile={revealCircleTile}
+        />
       )}
 
-      {['winners_circle', 'winners_circle_summary'].includes(gameState.status) && (
-
-        <div className="winners-circle-view" style={{ textAlign: 'center', width: '100%', minHeight: '60vh', position: 'relative' }}>
-          <div className="timer" style={{ 
-            position: 'absolute', 
-            top: '0', 
-            right: '2rem', 
-            fontSize: '4rem',
-            fontWeight: 'bold',
-            color: currentCircleTimer <= 10 ? '#ff3366' : '#fff'
-          }}>
-            {currentCircleTimer}
-          </div>
-
-          <h1 style={{ color: '#FFB800', marginBottom: '2rem' }}>Winner's Circle</h1>
-          
-          <div className="circle-pyramid">
-             <div className="pyramid-row top-row">
-               <div 
-                 className={`circle-card ${gameState.circleBoard[5].completed ? 'completed' : ''} ${gameState.activeCircleIndex === 5 && gameState.circleRevealed && gameState.status === 'winners_circle' ? 'active' : ''} ${gameState.status === 'winners_circle_summary' && !gameState.circleBoard[5].completed ? 'clickable' : ''}`}
-                 onClick={() => revealCircleTile(5)}
-                 style={{ cursor: gameState.status === 'winners_circle_summary' && !gameState.circleBoard[5].completed ? 'pointer' : 'default' }}
-               >
-                 {gameState.circleBoard[5].completed ? '' : ((gameState.circleRevealed && gameState.activeCircleIndex === 5 && gameState.status === 'winners_circle') || gameState.circleBoard[5].summaryRevealed ? gameState.circleBoard[5].phrase : '???')}
-               </div>
-             </div>
-             <div className="pyramid-row middle-row">
-               {[3, 4].map(idx => (
-                 <div 
-                   key={idx} 
-                   className={`circle-card ${gameState.circleBoard[idx].completed ? 'completed' : ''} ${gameState.activeCircleIndex === idx && gameState.circleRevealed && gameState.status === 'winners_circle' ? 'active' : ''} ${gameState.status === 'winners_circle_summary' && !gameState.circleBoard[idx].completed ? 'clickable' : ''}`}
-                   onClick={() => revealCircleTile(idx)}
-                   style={{ cursor: gameState.status === 'winners_circle_summary' && !gameState.circleBoard[idx].completed ? 'pointer' : 'default' }}
-                 >
-                   {gameState.circleBoard[idx].completed ? '' : ((gameState.circleRevealed && gameState.activeCircleIndex === idx && gameState.status === 'winners_circle') || gameState.circleBoard[idx].summaryRevealed ? gameState.circleBoard[idx].phrase : '???')}
-                 </div>
-               ))}
-             </div>
-             <div className="pyramid-row bottom-row">
-               {[0, 1, 2].map(idx => (
-                 <div 
-                   key={idx} 
-                   className={`circle-card ${gameState.circleBoard[idx].completed ? 'completed' : ''} ${gameState.activeCircleIndex === idx && gameState.circleRevealed && gameState.status === 'winners_circle' ? 'active' : ''} ${gameState.status === 'winners_circle_summary' && !gameState.circleBoard[idx].completed ? 'clickable' : ''}`}
-                   onClick={() => revealCircleTile(idx)}
-                   style={{ cursor: gameState.status === 'winners_circle_summary' && !gameState.circleBoard[idx].completed ? 'pointer' : 'default' }}
-                 >
-                   {gameState.circleBoard[idx].completed ? '' : ((gameState.circleRevealed && gameState.activeCircleIndex === idx && gameState.status === 'winners_circle') || gameState.circleBoard[idx].summaryRevealed ? gameState.circleBoard[idx].phrase : '???')}
-                 </div>
-               ))}
-             </div>
-          </div>
-
-          {gameState.status === 'winners_circle' && !gameState.circleRevealed && (
-            <button className="btn btn-primary" onClick={startCircleClock} style={{ marginTop: '3rem', fontSize: '2rem', padding: '1rem 4rem' }}>START CLOCK</button>
-          )}
-
-          {gameState.status === 'winners_circle' && gameState.circleRevealed && (
-            <div className="controls" style={{ marginTop: '4rem', display: 'flex', gap: '2rem', justifyContent: 'center' }}>
-              <button className="btn btn-success" onClick={markCircleCorrect} style={{ fontSize: '2rem', padding: '1rem 4rem' }}>CORRECT</button>
-              <button className="btn btn-danger" onClick={markCirclePass} style={{ fontSize: '2rem', padding: '1rem 4rem' }}>PASS</button>
-            </div>
-          )}
-
-          {gameState.status === 'winners_circle_summary' && (
-            <div className="controls" style={{ marginTop: '4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
-              <h2 style={{ color: '#ff3366', margin: 0 }}>Time's Up!</h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem', margin: 0 }}>Tap any "???" tile to reveal the answer.</p>
-              <button className="btn btn-primary" onClick={() => updateRoomState(roomId, { status: 'lobby' })} style={{ fontSize: '1.5rem', padding: '1rem 3rem' }}>Back to Lobby</button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {gameState.status === 'winners_circle_win' && (
-        <div className="summary-view win">
-          <h1 style={{ color: '#FFB800', fontSize: '5rem' }}>YOU WON!</h1>
-          <h2>$25,000 Pyramid!</h2>
-          <button className="btn btn-primary" onClick={() => updateRoomState(roomId, { status: 'lobby' })}>Back to Lobby</button>
-        </div>
-      )}
-
-      {settingsOpen && (
-        <div className="settings-overlay">
-          <div className="settings-modal fade-in">
-            <div className="settings-header">
-              <h2>Lobby Settings</h2>
-              <button className="close-btn" onClick={() => setSettingsOpen(false)}>×</button>
-            </div>
-            
-            <div className="settings-tabs">
-              <button className={`settings-tab-btn ${settingsTab === 'game' ? 'active' : ''}`} onClick={() => setSettingsTab('game')}>Game Setup</button>
-              <button className={`settings-tab-btn ${settingsTab === 'ai' ? 'active' : ''}`} onClick={() => setSettingsTab('ai')}>AI Generation</button>
-            </div>
-            
-            <div className="settings-body">
-              {settingsTab === 'game' ? (
-                <div className="settings-tab-content">
-                  <div className="settings-group">
-                    <label>Game Mode</label>
-                    <select value={localSettings.gameMode} onChange={e => {
-                      setLocalSettings({...localSettings, gameMode: e.target.value});
-                      setGameMode(e.target.value);
-                    }} className="settings-select">
-                      <option value="classic">Classic (Built-in Categories)</option>
-                      <option value="ai">AI Personalized Mode</option>
-                    </select>
-                  </div>
-                  
-                  {localSettings.gameMode === 'classic' && (
-                    <div className="settings-group">
-                      <label>Built-in Content File</label>
-                      <select value={localSettings.contentFile || defaultFilename} onChange={e => {
-                        setLocalSettings({...localSettings, contentFile: e.target.value});
-                      }} className="settings-select">
-                        {Object.keys(contentFiles).map(filename => (
-                          <option key={filename} value={filename}>{filename}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                  
-                  <div style={{ display: 'flex', gap: '1rem' }}>
-                    <div className="settings-group" style={{ flex: 1 }}>
-                      <label>Category Timer (seconds)</label>
-                      <input type="number" min="5" max="180" value={localSettings.timerDuration} onChange={e => setLocalSettings({...localSettings, timerDuration: parseInt(e.target.value) || 30})} className="settings-input" />
-                    </div>
-                    <div className="settings-group" style={{ flex: 1 }}>
-                      <label>Winner's Circle Timer (seconds)</label>
-                      <input type="number" min="5" max="300" value={localSettings.circleTimerDuration} onChange={e => setLocalSettings({...localSettings, circleTimerDuration: parseInt(e.target.value) || 60})} className="settings-input" />
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '1rem' }}>
-                    <div className="settings-group" style={{ flex: 1 }}>
-                      <label>Number of Categories</label>
-                      <select value={localSettings.numCategories} onChange={e => setLocalSettings({...localSettings, numCategories: parseInt(e.target.value) || 6})} className="settings-select">
-                        <option value="3">3 Categories (Short)</option>
-                        <option value="6">6 Categories (Classic)</option>
-                      </select>
-                    </div>
-                    <div className="settings-group" style={{ flex: 1 }}>
-                      <label>Words per Category</label>
-                      <select value={localSettings.numWordsPerCategory} onChange={e => setLocalSettings({...localSettings, numWordsPerCategory: parseInt(e.target.value) || 6})} className="settings-select">
-                        <option value="5">5 Words</option>
-                        <option value="6">6 Words (Classic)</option>
-                        <option value="7">7 Words</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="settings-group">
-                    <label>Pass Limit</label>
-                    <select value={localSettings.passLimit} onChange={e => setLocalSettings({...localSettings, passLimit: e.target.value})} className="settings-select">
-                      <option value="unlimited">Unlimited Passes</option>
-                      <option value="1">1 Pass per Category</option>
-                      <option value="2">2 Passes per Category</option>
-                      <option value="3">3 Passes per Category</option>
-                    </select>
-                  </div>
-
-                  <div className="settings-group">
-                    <div className="settings-checkbox-group">
-                      <input type="checkbox" id="soundEnabled" checked={localSettings.soundEnabled} onChange={e => setLocalSettings({...localSettings, soundEnabled: e.target.checked})} />
-                      <label htmlFor="soundEnabled">Enable sound effects (Dings, Buzzers, Ticks)</label>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="settings-tab-content">
-                  <div className="settings-group">
-                    <label>AI Provider</label>
-                    <select value={localSettings.aiProvider} onChange={e => setLocalSettings({...localSettings, aiProvider: e.target.value})} className="settings-select">
-                      <option value="local">Local LLM (Ollama / LM Studio)</option>
-                      <option value="gemini">Google Gemini API</option>
-                    </select>
-                  </div>
-
-                  {localSettings.aiProvider === 'local' ? (
-                    <>
-                      <div className="settings-group">
-                        <label>Local LLM URL</label>
-                        <input type="text" value={localSettings.localUrl} onChange={e => setLocalSettings({...localSettings, localUrl: e.target.value})} className="settings-input" />
-                      </div>
-                      <div className="settings-group">
-                        <label>Local LLM Model</label>
-                        <input type="text" value={localSettings.localModel} onChange={e => setLocalSettings({...localSettings, localModel: e.target.value})} className="settings-input" />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="settings-group">
-                        <label>Gemini API Key</label>
-                        <input type="password" value={localSettings.geminiApiKey} onChange={e => setLocalSettings({...localSettings, geminiApiKey: e.target.value})} className="settings-input" placeholder="AIzaSy..." />
-                      </div>
-                      <div className="settings-group">
-                        <label>Gemini Model</label>
-                        <select value={localSettings.geminiModel} onChange={e => setLocalSettings({...localSettings, geminiModel: e.target.value})} className="settings-select">
-                          <option value="gemini-1.5-flash-latest">Gemini 1.5 Flash (Recommended)</option>
-                          <option value="gemini-1.5-pro-latest">Gemini 1.5 Pro</option>
-                        </select>
-                      </div>
-                    </>
-                  )}
-
-                  <div style={{ display: 'flex', gap: '1rem' }}>
-                    <div className="settings-group" style={{ flex: 1 }}>
-                      <label>AI Category Difficulty</label>
-                      <select value={localSettings.difficulty} onChange={e => setLocalSettings({...localSettings, difficulty: e.target.value})} className="settings-select">
-                        <option value="easy">Easy</option>
-                        <option value="medium">Medium</option>
-                        <option value="hard">Hard</option>
-                      </select>
-                    </div>
-                    <div className="settings-group" style={{ flex: 1 }}>
-                      <label>AI Category Tone</label>
-                      <select value={localSettings.tone} onChange={e => setLocalSettings({...localSettings, tone: e.target.value})} className="settings-select">
-                        <option value="standard">Standard</option>
-                        <option value="witty">Witty (Puns)</option>
-                        <option value="inside-joke">Inside Jokes / Personalized</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="settings-footer">
-              <button className="btn btn-secondary" onClick={() => setSettingsOpen(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={saveSettings}>Save Settings</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <SettingsModal 
+        roomId={roomId}
+        settingsOpen={settingsOpen}
+        setSettingsOpen={setSettingsOpen}
+        localSettings={localSettings}
+        setLocalSettings={setLocalSettings}
+        saveSettings={saveSettings}
+        contentFiles={contentFiles}
+        defaultFilename={defaultFilename}
+      />
     </div>
   );
 }
