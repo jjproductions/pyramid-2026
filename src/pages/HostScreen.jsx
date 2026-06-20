@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { subscribeToRoom, setRoomState, updateRoomState } from '../firebase';
 import { generatePyramidBoard } from '../ai';
 import { playDing, playBuzz, playSwoosh, playClick, playWin } from '../utils/sounds';
@@ -198,9 +198,9 @@ export default function HostScreen() {
 
   if (!gameState) return <div className="loading">Creating Room...</div>;
 
-  const players = Object.values(gameState.players || {});
+  const players = useMemo(() => Object.values(gameState.players || {}), [gameState.players]);
 
-  const startGame = async () => {
+  const startGame = useCallback(async () => {
     // Validate pairs if pairing mode is enabled
     for (const tNum of [1, 2]) {
       if (pairingModes[tNum]) {
@@ -314,10 +314,10 @@ export default function HostScreen() {
         });
       }
     }
-  };
+  }, [gameState, pairingModes, teamPairs, initialGivers, roomId, players]);
 
   // Helper: compute next giverId / guesserId after a turn ends
-  const computeNextTurn = (nextTeam) => {
+  const computeNextTurn = useCallback((nextTeam) => {
     const teams = gameState.teams;
     const justPlayedTeam = gameState.currentTurn.team;
     
@@ -372,9 +372,9 @@ export default function HostScreen() {
       updates[`teams/${justPlayedTeam}/guesserIndex`] = nextGuesserIdx;
     }
     return updates;
-  };
+  }, [gameState]);
 
-  const nextTurn = () => {
+  const nextTurn = useCallback(() => {
     const nextTeam = gameState.currentTurn.team === 1 ? 2 : 1;
     updateRoomState(roomId, {
       ...computeNextTurn(nextTeam),
@@ -387,9 +387,9 @@ export default function HostScreen() {
       wordsScored: 0,
       passesUsed: 0
     });
-  };
+  }, [gameState, computeNextTurn, roomId]);
 
-  const startNewRound = async () => {
+  const startNewRound = useCallback(async () => {
     // Preserve indices rotation across rounds; reset board and alternate starting team
     const teams = gameState.teams;
     const startingTeam = gameState.nextStartingTeam || 1;
@@ -426,9 +426,9 @@ export default function HostScreen() {
       wordsScored: 0,
       passesUsed: 0
     });
-  };
+  }, [gameState, roomId]);
 
-  const startWinnersCircle = () => {
+  const startWinnersCircle = useCallback(() => {
     let winningTeam = 1;
     if (gameState.teams[2].score > gameState.teams[1].score) {
       winningTeam = 2;
@@ -442,9 +442,9 @@ export default function HostScreen() {
       'teams/1/score': 0,
       'teams/2/score': 0
     });
-  };
+  }, [gameState, roomId]);
 
-  const confirmWinnersCirclePlayers = async (giverId, guesserId) => {
+  const confirmWinnersCirclePlayers = useCallback(async (giverId, guesserId) => {
     const rawCircle = await getRandomCircle(gameState.settings);
     const circleBoard = rawCircle.map(tile => ({ ...tile, summaryRevealed: false }));
     updateRoomState(roomId, {
@@ -457,16 +457,16 @@ export default function HostScreen() {
       circleTimerEndTime: null,
       circleRevealed: false
     });
-  };
+  }, [gameState, roomId]);
 
-  const revealCircleTile = (idx) => {
+  const revealCircleTile = useCallback((idx) => {
     if (gameState.status !== 'winners_circle_summary') return;
     updateRoomState(roomId, {
       [`circleBoard/${idx}/summaryRevealed`]: true
     });
-  };
+  }, [gameState, roomId]);
 
-  const selectCategory = (index) => {
+  const selectCategory = useCallback((index) => {
     const numWords = gameState.board[index].words.length;
     updateRoomState(roomId, { 
       activeCategoryIndex: index,
@@ -478,18 +478,18 @@ export default function HostScreen() {
       wordsScored: 0,
       passesUsed: 0
     });
-  };
+  }, [gameState, roomId]);
 
-  const startCategory = () => {
+  const startCategory = useCallback(() => {
     const duration = gameState.timer ?? gameState.settings?.timerDuration ?? DEFAULT_SETTINGS.timerDuration;
     updateRoomState(roomId, {
       categoryRevealed: true,
       timerActive: true,
       timerEndTime: Date.now() + duration * 1000
     });
-  };
+  }, [gameState, roomId]);
 
-  const markCorrect = () => {
+  const markCorrect = useCallback(() => {
     const teamId = gameState.currentTurn.team;
     const nextScore = gameState.teams[teamId].score + 1;
     const nextWordScored = gameState.wordsScored + 1;
@@ -521,9 +521,9 @@ export default function HostScreen() {
     }
     
     updateRoomState(roomId, updates);
-  };
+  }, [gameState, roomId, currentTimer]);
 
-  const markPass = () => {
+  const markPass = useCallback(() => {
     const numWords = gameState.board[gameState.activeCategoryIndex].words.length;
     let nextIdx = (gameState.activeWordIndex + 1) % numWords;
     while(gameState.wordStates && gameState.wordStates[nextIdx] === true) {
@@ -540,18 +540,18 @@ export default function HostScreen() {
       activeWordIndex: nextIdx,
       passesUsed: nextPasses
     });
-  };
+  }, [gameState, roomId]);
 
-  const startCircleClock = () => {
+  const startCircleClock = useCallback(() => {
     const duration = gameState.circleTimer ?? gameState.settings?.circleTimerDuration ?? DEFAULT_SETTINGS.circleTimerDuration;
     updateRoomState(roomId, {
       circleRevealed: true,
       circleTimerActive: true,
       circleTimerEndTime: Date.now() + duration * 1000
     });
-  };
+  }, [gameState, roomId]);
 
-  const markCircleCorrect = () => {
+  const markCircleCorrect = useCallback(() => {
     const nextBoard = [...gameState.circleBoard];
     nextBoard[gameState.activeCircleIndex].completed = true;
 
@@ -581,9 +581,9 @@ export default function HostScreen() {
         activeCircleIndex: nextIdx
       });
     }
-  };
+  }, [gameState, roomId, currentCircleTimer]);
 
-  const markCirclePass = () => {
+  const markCirclePass = useCallback(() => {
     const nextBoard = [...gameState.circleBoard];
     let nextIdx = (gameState.activeCircleIndex + 1) % 6;
     while(nextBoard[nextIdx].completed) {
@@ -597,15 +597,15 @@ export default function HostScreen() {
     updateRoomState(roomId, { 
       activeCircleIndex: nextIdx
     });
-  };
+  }, [gameState, roomId]);
 
-  const openSettings = () => {
+  const openSettings = useCallback(() => {
     setLocalSettings(gameState.settings || DEFAULT_SETTINGS);
     setSettingsTab('game');
     setSettingsOpen(true);
-  };
+  }, [gameState]);
 
-  const saveSettings = async () => {
+  const saveSettings = useCallback(async () => {
     const newBoard = await getRandomCategories(localSettings);
     updateRoomState(roomId, { 
       settings: localSettings,
@@ -613,7 +613,7 @@ export default function HostScreen() {
       timer: localSettings.timerDuration
     });
     setSettingsOpen(false);
-  };
+  }, [localSettings, roomId]);
 
   return (
     <div className="host-screen fade-in">
