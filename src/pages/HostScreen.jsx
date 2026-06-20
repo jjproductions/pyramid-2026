@@ -88,7 +88,9 @@ export default function HostScreen() {
   const [settingsTab, setSettingsTab] = useState('game');
   const [localSettings, setLocalSettings] = useState(DEFAULT_SETTINGS);
   const [initialGivers, setInitialGivers] = useState({ 1: null, 2: null });
-  const timerRef = useRef(null);
+  const [now, setNow] = useState(Date.now());
+  const prevTimerRef = useRef(null);
+  const prevCircleTimerRef = useRef(null);
 
   useEffect(() => {
     const code = generateRoomCode();
@@ -117,55 +119,57 @@ export default function HostScreen() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    let interval;
+    if (gameState?.timerActive || gameState?.circleTimerActive) {
+       interval = setInterval(() => setNow(Date.now()), 250);
+    }
+    return () => clearInterval(interval);
+  }, [gameState?.timerActive, gameState?.circleTimerActive]);
+
+  let currentTimer = gameState?.timer ?? 30;
+  if (gameState?.timerActive && gameState?.timerEndTime) {
+     currentTimer = Math.max(0, Math.ceil((gameState.timerEndTime - now) / 1000));
+  }
+
+  let currentCircleTimer = gameState?.circleTimer ?? 60;
+  if (gameState?.circleTimerActive && gameState?.circleTimerEndTime) {
+     currentCircleTimer = Math.max(0, Math.ceil((gameState.circleTimerEndTime - now) / 1000));
+  }
+
   // Host acts as the master timer
   useEffect(() => {
-    if (gameState?.timerActive && gameState?.timer > 0) {
-      timerRef.current = setTimeout(() => {
-        const nextTime = gameState.timer - 1;
-        updateRoomState(roomId, { timer: nextTime });
-        
-        // Sound warning tick in final 5 seconds
-        if (gameState.settings?.soundEnabled && nextTime <= 5 && nextTime > 0) {
-          playClick();
-        }
-      }, 1000);
-    } else if (gameState?.timer === 0 && gameState?.timerActive) {
-      // Time is up!
-      if (gameState.settings?.soundEnabled) {
-        playBuzz();
+    if (gameState?.timerActive && currentTimer !== prevTimerRef.current) {
+      if (currentTimer <= 5 && currentTimer > 0 && gameState.settings?.soundEnabled) {
+         playClick();
       }
-      updateRoomState(roomId, { 
-        timerActive: false, 
-        status: 'round_summary',
-        [`board/${gameState.activeCategoryIndex}/completed`]: true
-      });
-    }
-
-    if (gameState?.circleTimerActive && gameState?.circleTimer > 0) {
-      timerRef.current = setTimeout(() => {
-        const nextTime = gameState.circleTimer - 1;
-        updateRoomState(roomId, { circleTimer: nextTime });
-        
-        // Sound warning tick in final 5 seconds
-        if (gameState.settings?.soundEnabled && nextTime <= 5 && nextTime > 0) {
-          playClick();
-        }
-      }, 1000);
-    } else if (gameState?.circleTimer === 0 && gameState?.circleTimerActive) {
-      if (gameState.settings?.soundEnabled) {
-        playBuzz();
+      if (currentTimer === 0) {
+        if (gameState.settings?.soundEnabled) playBuzz();
+        updateRoomState(roomId, { 
+          timerActive: false, 
+          timer: 0,
+          status: 'round_summary',
+          [`board/${gameState.activeCategoryIndex}/completed`]: true
+        });
       }
-      updateRoomState(roomId, { 
-        circleTimerActive: false, 
-        status: 'winners_circle_summary'
-      });
     }
+    prevTimerRef.current = currentTimer;
 
-    return () => clearTimeout(timerRef.current);
-  }, [
-    gameState?.timer, gameState?.timerActive, roomId, gameState?.activeCategoryIndex,
-    gameState?.circleTimer, gameState?.circleTimerActive, gameState?.settings?.soundEnabled
-  ]);
+    if (gameState?.circleTimerActive && currentCircleTimer !== prevCircleTimerRef.current) {
+      if (currentCircleTimer <= 5 && currentCircleTimer > 0 && gameState.settings?.soundEnabled) {
+         playClick();
+      }
+      if (currentCircleTimer === 0) {
+        if (gameState.settings?.soundEnabled) playBuzz();
+        updateRoomState(roomId, { 
+          circleTimerActive: false, 
+          circleTimer: 0,
+          status: 'winners_circle_summary'
+        });
+      }
+    }
+    prevCircleTimerRef.current = currentCircleTimer;
+  }, [currentTimer, currentCircleTimer, gameState?.timerActive, gameState?.circleTimerActive, roomId, gameState?.activeCategoryIndex, gameState?.settings?.soundEnabled]);
 
   if (!gameState) return <div className="loading">Creating Room...</div>;
 
@@ -423,6 +427,7 @@ export default function HostScreen() {
       activeCircleIndex: 0,
       circleTimer: gameState.settings?.circleTimerDuration || DEFAULT_SETTINGS.circleTimerDuration,
       circleTimerActive: false,
+      circleTimerEndTime: null,
       circleRevealed: false
     });
   };
@@ -449,9 +454,11 @@ export default function HostScreen() {
   };
 
   const startCategory = () => {
+    const duration = gameState.timer ?? gameState.settings?.timerDuration ?? DEFAULT_SETTINGS.timerDuration;
     updateRoomState(roomId, {
       categoryRevealed: true,
-      timerActive: true
+      timerActive: true,
+      timerEndTime: Date.now() + duration * 1000
     });
   };
 
@@ -473,6 +480,7 @@ export default function HostScreen() {
 
     if (nextWordScored >= numWords) {
       updates.timerActive = false;
+      updates.timer = currentTimer;
       updates.status = 'round_summary';
       updates[`board/${gameState.activeCategoryIndex}/completed`] = true;
     } else {
@@ -508,9 +516,11 @@ export default function HostScreen() {
   };
 
   const startCircleClock = () => {
+    const duration = gameState.circleTimer ?? gameState.settings?.circleTimerDuration ?? DEFAULT_SETTINGS.circleTimerDuration;
     updateRoomState(roomId, {
       circleRevealed: true,
-      circleTimerActive: true
+      circleTimerActive: true,
+      circleTimerEndTime: Date.now() + duration * 1000
     });
   };
 
@@ -531,6 +541,7 @@ export default function HostScreen() {
       updateRoomState(roomId, {
         circleBoard: nextBoard,
         circleTimerActive: false,
+        circleTimer: currentCircleTimer,
         status: 'winners_circle_win'
       });
     } else {
@@ -729,9 +740,9 @@ export default function HostScreen() {
             right: '2rem', 
             fontSize: '4rem',
             fontWeight: 'bold',
-            color: gameState.timer <= 10 ? '#ff3366' : '#fff'
+            color: currentTimer <= 10 ? '#ff3366' : '#fff'
           }}>
-            0:{gameState.timer < 10 ? `0${gameState.timer}` : gameState.timer}
+            0:{currentTimer < 10 ? `0${currentTimer}` : currentTimer}
           </div>
 
           <h2 style={{ fontSize: '3rem', color: '#a0a0a0', marginBottom: '1rem' }}>
@@ -837,9 +848,9 @@ export default function HostScreen() {
             right: '2rem', 
             fontSize: '4rem',
             fontWeight: 'bold',
-            color: gameState.circleTimer <= 10 ? '#ff3366' : '#fff'
+            color: currentCircleTimer <= 10 ? '#ff3366' : '#fff'
           }}>
-            {gameState.circleTimer}
+            {currentCircleTimer}
           </div>
 
           <h1 style={{ color: '#FFB800', marginBottom: '2rem' }}>Winner's Circle</h1>

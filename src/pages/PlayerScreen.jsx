@@ -14,6 +14,7 @@ export default function PlayerScreen() {
   const [playerId, setPlayerId] = useState('');
   const [loading, setLoading] = useState(true);
   const [joiningStep, setJoiningStep] = useState('info'); // 'info' or 'team'
+  const [now, setNow] = useState(Date.now());
   const sessionRestored = useRef(false);
 
   useEffect(() => {
@@ -48,6 +49,14 @@ export default function PlayerScreen() {
     });
     return () => unsubscribe();
   }, [roomId]);
+
+  useEffect(() => {
+    let interval;
+    if (gameState?.timerActive || gameState?.circleTimerActive) {
+       interval = setInterval(() => setNow(Date.now()), 250);
+    }
+    return () => clearInterval(interval);
+  }, [gameState?.timerActive, gameState?.circleTimerActive]);
 
   const handleInfoSubmit = (e) => {
     e.preventDefault();
@@ -123,6 +132,16 @@ export default function PlayerScreen() {
     }
   }
 
+  let currentTimer = gameState?.timer ?? 30;
+  if (gameState?.timerActive && gameState?.timerEndTime) {
+     currentTimer = Math.max(0, Math.ceil((gameState.timerEndTime - now) / 1000));
+  }
+
+  let currentCircleTimer = gameState?.circleTimer ?? 60;
+  if (gameState?.circleTimerActive && gameState?.circleTimerEndTime) {
+     currentCircleTimer = Math.max(0, Math.ceil((gameState.circleTimerEndTime - now) / 1000));
+  }
+
   const myPlayer = gameState.players?.[playerId];
   const isGiver = gameState.currentTurn?.giverId === playerId;
   const isGuesser = gameState.currentTurn?.guesserId === playerId;
@@ -147,9 +166,11 @@ export default function PlayerScreen() {
   };
 
   const startCategory = () => {
+    const duration = gameState.timer ?? gameState.settings?.timerDuration ?? 30;
     updateRoomState(roomId, {
       categoryRevealed: true,
-      timerActive: true
+      timerActive: true,
+      timerEndTime: Date.now() + duration * 1000
     });
   };
 
@@ -171,6 +192,7 @@ export default function PlayerScreen() {
     if (nextWordScored >= numWords) {
       // Finished category early
       updates.timerActive = false;
+      updates.timer = currentTimer;
       updates.status = 'round_summary';
       updates[`board/${gameState.activeCategoryIndex}/completed`] = true;
     } else {
@@ -223,6 +245,7 @@ export default function PlayerScreen() {
       updateRoomState(roomId, {
         circleBoard: nextBoard,
         circleTimerActive: false,
+        circleTimer: currentCircleTimer,
         status: 'winners_circle_win'
       });
     } else {
@@ -364,7 +387,14 @@ export default function PlayerScreen() {
           {!gameState.circleRevealed ? (
             <>
               <h3 style={{ margin: 0 }}>Ready to start the clock?</h3>
-              <button className="btn btn-primary" onClick={() => updateRoomState(roomId, { circleRevealed: true, circleTimerActive: true })}>GO!</button>
+              <button className="btn btn-primary" onClick={() => {
+                const duration = gameState.circleTimer ?? gameState.settings?.circleTimerDuration ?? 60;
+                updateRoomState(roomId, { 
+                  circleRevealed: true, 
+                  circleTimerActive: true,
+                  circleTimerEndTime: Date.now() + duration * 1000
+                });
+              }}>GO!</button>
             </>
           ) : (
             <div className="word-view">
