@@ -101,7 +101,7 @@ export default function WinnersCircle({
            <div className="pyramid-row middle-row">
              {[3, 4].map(idx => (
                <div 
-                 key={idx} 
+                 key={gameState.circleBoard[idx]?.id || idx} 
                  className={`circle-card ${gameState.circleBoard[idx].completed ? 'completed' : ''} ${gameState.activeCircleIndex === idx && gameState.circleRevealed && gameState.status === 'winners_circle' ? 'active' : ''} ${gameState.status === 'winners_circle_summary' && !gameState.circleBoard[idx].completed ? 'clickable' : ''}`}
                  onClick={() => revealCircleTile(idx)}
                  style={{ cursor: gameState.status === 'winners_circle_summary' && !gameState.circleBoard[idx].completed ? 'pointer' : 'default' }}
@@ -113,7 +113,7 @@ export default function WinnersCircle({
            <div className="pyramid-row bottom-row">
              {[0, 1, 2].map(idx => (
                <div 
-                 key={idx} 
+                 key={gameState.circleBoard[idx]?.id || idx} 
                  className={`circle-card ${gameState.circleBoard[idx].completed ? 'completed' : ''} ${gameState.activeCircleIndex === idx && gameState.circleRevealed && gameState.status === 'winners_circle' ? 'active' : ''} ${gameState.status === 'winners_circle_summary' && !gameState.circleBoard[idx].completed ? 'clickable' : ''}`}
                  onClick={() => revealCircleTile(idx)}
                  style={{ cursor: gameState.status === 'winners_circle_summary' && !gameState.circleBoard[idx].completed ? 'pointer' : 'default' }}

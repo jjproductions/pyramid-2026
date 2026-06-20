@@ -23,7 +23,7 @@ export default function GameBoard({ gameState, selectCategory, startNewRound, st
       <div className="pyramid-board">
         {gameState.board.map((cat, index) => (
           <div 
-            key={index} 
+            key={cat.id || index} 
             className={`category-card ${cat.completed ? 'completed' : 'clickable'}`}
             onClick={() => !cat.completed && selectCategory(index)}
             style={{ cursor: cat.completed ? 'default' : 'pointer' }}

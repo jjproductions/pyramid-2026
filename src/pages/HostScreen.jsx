@@ -69,6 +69,7 @@ const getRandomCategories = async (settings = DEFAULT_SETTINGS) => {
   return slicedRound.map(cat => {
     const shuffledWords = [...cat.Word].sort(() => 0.5 - Math.random());
     return { 
+      id: crypto.randomUUID(),
       name: cat._name, 
       description: cat._description,
       words: shuffledWords.slice(0, numWords),
@@ -93,6 +94,7 @@ const getRandomCircle = async (settings = DEFAULT_SETTINGS) => {
   const phrases = data[randomRoundIndex].Round.Circle.Phrase;
   const shuffled = [...phrases].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, 6).map(phrase => ({
+    id: crypto.randomUUID(),
     phrase,
     completed: false
   }));
@@ -294,6 +296,7 @@ export default function HostScreen() {
           const shuffledWords = [...cat.words].sort(() => 0.5 - Math.random());
           return { 
             ...cat, 
+            id: crypto.randomUUID(),
             words: shuffledWords.slice(0, gameState.settings?.numWordsPerCategory || 6), 
             completed: false, 
             owner: null 
