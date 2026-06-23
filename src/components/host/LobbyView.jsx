@@ -99,6 +99,10 @@ export default function LobbyView({
       ) : (
         <p style={{ color: 'var(--danger)', fontWeight: 'bold' }}>Need at least 2 players per team to start.</p>
       )}
+
+      <div className="lobby-footer" style={{ marginTop: '3rem', fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+        Version: {__APP_VERSION__}
+      </div>
     </div>
   );
 }
